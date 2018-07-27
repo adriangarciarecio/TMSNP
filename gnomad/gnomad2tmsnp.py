@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+
+# Processs GNOMAD data (after Mireia's scripts)
+# Takes the TMs from the MySQL tabe
+
+import mysql.connector
+import sqlalchemy
+import os
+import pandas as pd
+import numpy as np
+
+# Set the connection
+conn = mysql.connector.connect(host='alf03.uab.cat', user='lmcdb',
+                               password=os.getenv('LMCDB_PASS'), database='tmsnp')
+mycursor = conn.cursor()
+mycursor.execute("select * from tm_segments")
+
+three2one = {'Cys': 'C', 'Asp': 'D', 'Ser': 'S', 'Gln': 'Q', 'Lys': 'K',
+    'Ile': 'I', 'Pro': 'P', 'Thr': 'T', 'Phe': 'F', 'Asn': 'N', 'Gly': 'G',
+    'His': 'H', 'Leu': 'L', 'Arg': 'R', 'Trp': 'W', 'Ala': 'A', 'Val':'V',
+    'Glu': 'E', 'Tyr': 'Y', 'Met': 'M'}
+
+table_rows = mycursor.fetchall()
+df_tm = pd.DataFrame(table_rows, columns=['acc', 'ini', 'end'])
+df_gnomad = pd.read_csv('gnomad.txt', sep='\t', names=['acc', 'snp_pos', 'aa_ini', 'aa_fin'])
+df_gnomad['tm'] = 0
+df_gnomad['aa_ini'].replace(three2one, inplace=True)
+df_gnomad['aa_fin'].replace(three2one, inplace=True)
+df_gnomad['id'] = np.nan
+df_gnomad['snp_id'] = df_gnomad.index
+
+df_gnomad['snp_id'] = 'GNO_' + df_gnomad['snp_id'].astype(str)
+df_gnomad['gene'] = np.nan
+df_gnomad['snp_rs'] = np.nan
+df_gnomad['pathogenic'] = 0
+df_gnomad[['acc', 'id', 'gene', 'snp_id', 'snp_rs', 'aa_ini', 'aa_fin', 'snp_pos', 'pathogenic']]
+
+for i in df_gnomad.index:
+    snp_data = df_gnomad.loc[i]
+    df_prot_tms = df_tm[df_tm['acc'] == snp_data['acc']]
+    for j, row in df_prot_tms.iterrows():
+        if row.ini <= snp_data['snp_pos'] and row.end >= snp_data['snp_pos']:
+           #print(row,  snp_data['snp_pos'])
+           df_gnomad.loc[i, 'tm'] = 1
+           break
+
+# Filter TM only and update the database
+df_gnomad_tm = df_gnomad[df_gnomad['tm']==1]
+del df_gnomad_tm['tm']
+#df_gnomad_tm.to_csv('gnomad_tm.csv')
+engine = sqlalchemy.create_engine(f'mysql+mysqlconnector://lmcdb:{os.getenv("LMCDB_PASS")}@alf03.uab.cat/tmsnp')
+df_gnomad_tm.to_sql('snps', engine, if_exists='append', index=False)
+
