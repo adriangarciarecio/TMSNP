@@ -20,6 +20,10 @@ conn = mysql.connector.connect(host='alf03.uab.cat', user='lmcdb',
 mycursor = conn.cursor()
 
 
+# Delete non-TM
+mycursor.execute("drop table if exists snp_val;")
+conn.commit()
+
 print('Evaluating SNPs based on the PFAM alignment')
 
 mycursor.execute("select distinct acc from snps;")

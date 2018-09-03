@@ -29,13 +29,16 @@ df_gnomad['aa_fin'].replace(three2one, inplace=True)
 df_gnomad['id'] = np.nan
 df_gnomad['snp_id'] = df_gnomad.index
 
-df_gnomad['snp_id'] = 'GNO_' + df_gnomad['snp_id'].astype(str)
+df_gnomad['snp_id'] = 'BIG_' + df_gnomad['snp_id'].astype(str)
 df_gnomad['gene'] = np.nan
 df_gnomad['snp_rs'] = np.nan
 df_gnomad['pathogenic'] = 0
 df_gnomad[['acc', 'id', 'gene', 'snp_id', 'snp_rs', 'aa_ini', 'aa_fin', 'snp_pos', 'pathogenic']]
 
+total_mut = len(df_gnomad)
 for i in df_gnomad.index:
+    if i % 1000 == 0:
+        print(round(i / total_mut * 100, 2))
     snp_data = df_gnomad.loc[i]
     df_prot_tms = df_tm[df_tm['acc'] == snp_data['acc']]
     for j, row in df_prot_tms.iterrows():
@@ -49,5 +52,5 @@ df_gnomad_tm = df_gnomad[df_gnomad['tm']==1]
 del df_gnomad_tm['tm']
 #df_gnomad_tm.to_csv('gnomad_tm.csv')
 engine = sqlalchemy.create_engine(f'mysql+mysqlconnector://lmcdb:{os.getenv("LMCDB_PASS")}@alf03.uab.cat/tmsnp')
-df_gnomad_tm.to_sql('snps', engine, if_exists='append', index=False)
+df_gnomad_tm.to_sql('snps', engine, if_exists='append', index=False, chunksize=1000)
 

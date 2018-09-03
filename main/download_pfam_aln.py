@@ -80,10 +80,12 @@ while len(llista_pfam_errors) != 0:
         print(download_counter)
     else:
         for pfam_dolent in llista_pfam_errors:
+            print('filename:', pfam_download_path + pfam_dolent)
+            # Write a file with an error message instead of removing the file
+            #outf1 = open(pfam_download_path + pfam_dolent, 'w')
+            #print('ERROR_ERROR/69-117             ----------------------------------', file=outf1)
+            #outf1.close()
             os.remove(pfam_download_path + pfam_dolent)
-            outf1 = open(pfam_download_path + pfam_dolent, 'w')
-            print('ERROR_ERROR/69-117             ----------------------------------', file=outf1)
-            outf1.close()
             print('eliminat per error en la descarrega del servidor (html) pfam el : ' + pfam_dolent)
         break
 
