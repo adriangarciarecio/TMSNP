@@ -11,48 +11,27 @@ pfam_download_raw = './pfam_download_raw/'
 pfam_download_raw_sys = pfam_download_raw[:-1]
 pfam_full = './Pfam-A.full.gz'
 
-#########################################COMPROVACIO ERRONIS I GREP DEL PFAM_FULL#################################################################################
-
-pfam_list_total = os.listdir(pfam_download_path_sys)
 finder = ""
 
-for dist_pfam in pfam_list_total:
-    data_llista = file_to_lines(pfam_download_path + dist_pfam)
-    print('checking for pfam correct download: ' + dist_pfam)
-    if len(data_llista) == 0:
-        os.remove(pfam_download_path + dist_pfam)
-        outf1 = open(pfam_download_raw + dist_pfam, 'w')
-        with gzip.open(pfam_full, 'rb') as FileObj:
-            for line in FileObj:
-                line = line.decode("ISO-8859-1")
-                # line = unicode(line, errors='ignore')
-                if line.find("AC   " + dist_pfam) != -1:
-                    finder = "trobat"
-                    print(line)
-                if finder == "trobat":
-                    print(line.rstrip("\n"), file=outf1)
-                if line.find("//") != -1 and finder == "trobat":
-                    finder = ""
-                    print(line)
-            outf1.close()
-    if data_llista[0].rstrip('\n') == "ERROR_ERROR/69-117             ----------------------------------":
-        os.remove(pfam_download_path + dist_pfam)
-        outf1 = open(pfam_download_raw + dist_pfam, 'w')
-        with gzip.open(pfam_full, 'rb') as FileObj:
-            for line in FileObj:
-                line = line.decode("ISO-8859-1")
-                # line = unicode(line, errors='ignore')
-                if line.find("AC   " + dist_pfam) != -1:
-                    finder = "trobat"
-                    print(line)
-                if finder == "trobat":
-                    print(line.rstrip("\n"), file=outf1)
-                if line.find("//") != -1 and finder == "trobat":
-                    finder = ""
-                    print(line)
-            outf1.close()
-    else:
-        continue
+with open('output_errors.txt') as error_file:
+    lines = error_file.readlines()
+    # read the list of pfam files
+    missing_pfams = [line[-8:-1] for line in lines[:-1]]
+
+for missing_pfam in missing_pfams:
+    outf1 = open(pfam_download_raw + missing_pfam, 'w')
+    with gzip.open(pfam_full, 'rb') as FileObj:
+        for line in FileObj:
+            line = line.decode("ISO-8859-1")
+            if line.find("AC   " + missing_pfam) != -1:
+                finder = "trobat"
+                print('Found ', missing_pfam)
+            if finder == "trobat":
+                print(line.rstrip("\n"), file=outf1)
+            if line.find("//") != -1 and finder == "trobat":
+                finder = ""
+                print(line)
+        outf1.close()
 
 pfam_list_total_raw = os.listdir(pfam_download_raw_sys)
 

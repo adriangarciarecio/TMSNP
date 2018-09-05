@@ -2,6 +2,7 @@
 
 ################################################
 import numpy as np
+import numpy
 import requests
 import collections
 from math import exp, expm1, log10, log
@@ -33,7 +34,7 @@ for tupple in distinct_acc_tupple:
     for acc in tupple:
         distinct_acc_list.append(acc)
 
-print(distinct_acc_list)
+#print(distinct_acc_list)
 
 ###################################################################################
 
@@ -64,16 +65,18 @@ dict_matrix = {'A': 0, 'R': 1, 'N': 2, 'D': 3, 'C': 4, 'Q': 5, 'E': 6, 'G': 7, '
 
 ###############################################################################################
 
+print('\nPart I: Evaluating subsitutions based in the Phat matrix')
+
 mycursor.execute("DROP TABLE IF EXISTS snp_phat")
 mycursor.execute("""CREATE TABLE snp_phat (acc varchar(20), id varchar(30), gene varchar(20),
-                    snp_id varchar(30), snp_rs varchar(30), aa_ini varchar(30), 
-                    aa_fin varchar(30), snp_pos int, pathogenic int, mat_punct int);""")
+                    snp_id varchar(30), snp_rs varchar(30), aa_ref varchar(30), 
+                    aa_mut varchar(30), snp_pos int, pathogenic int, subs_mat int);""")
 
 ########################################################################################33
 
-
-for distinct_acc in distinct_acc_list:
-    print("S'ha analitzat i omplert la taula_matrix amb les dades de la matriu del: " + distinct_acc)
+total_acc = len(distinct_acc_list)
+for i, distinct_acc in enumerate(distinct_acc_list):
+    print(f"Processing {distinct_acc} ({i+1} / {total_acc})")
     mycursor.execute("select distinct snp_id from snps where acc = '" + distinct_acc + "';")
     distinct_var_tupple = mycursor.fetchall()
     distinct_var_list = list()
@@ -82,13 +85,13 @@ for distinct_acc in distinct_acc_list:
             distinct_var_list.append(var)
 
     for var in distinct_var_list:
-        mycursor.execute("select aa_ini from snps where snp_id = '" + var + "';")
-        distinct_aa_inici_tupple = mycursor.fetchall()
-        for tupple in distinct_aa_inici_tupple:
-            for aa_inici in tupple:
-                distinct_aa_inici = aa_inici.strip()
+        mycursor.execute("select aa_ref from snps where snp_id = '" + var + "';")
+        distinct_aa_refci_tupple = mycursor.fetchall()
+        for tupple in distinct_aa_refci_tupple:
+            for aa_refci in tupple:
+                distinct_aa_refci = aa_refci.strip()
 
-        mycursor.execute("select aa_fin from snps where snp_id = '" + var + "';")
+        mycursor.execute("select aa_mut from snps where snp_id = '" + var + "';")
         distinct_aa_final_tupple = mycursor.fetchall()
         for tupple in distinct_aa_final_tupple:
             for aa_final in tupple:
@@ -132,38 +135,35 @@ for distinct_acc in distinct_acc_list:
         for tupple in distinct_pathogenic_tupple:
             for pathogenic in tupple:
                 distinct_pathogenic = pathogenic 
-
-        if (len(distinct_aa_inici) >= 2 or len(distinct_aa_final) >= 2 or distinct_aa_final == '/'):
+        ## Changes here
+        if (len(distinct_aa_refci) >= 2 or len(distinct_aa_final) >= 2 or distinct_aa_final == '/'):
              puntuation = None # -1000
-#            mycursor.execute(("INSERT INTO snp_phat VALUES" + str((distinct_acc, distinct_id, distinct_gene, var,
-#                                                                      distinct_rs, distinct_aa_inici, distinct_aa_final,
-#                                                                      distinct_snp_pos, 
-#                                                                      distinct_pathogenic, puntuation))))
-#            conn.commit()
-
         else:
-            print(distinct_aa_inici, distinct_aa_final)
-            puntuation = phat_matrix[dict_matrix[distinct_aa_inici]][dict_matrix[distinct_aa_final]]
-#            mycursor.execute(("INSERT INTO snp_phat VALUES" + str((distinct_acc, distinct_id, distinct_gene, var,
-#                                                                      distinct_rs, distinct_aa_inici, distinct_aa_final,
-#                                                                      distinct_snp_pos, 
-#                                                                      distinct_pathogenic, puntuation))))
-            sql_str = f"""INSERT INTO snp_phat VALUES ('{distinct_acc}', '{distinct_id}', '{distinct_gene}', '{var}',
-                                                                      '{distinct_rs}', '{distinct_aa_inici}', '{distinct_aa_final}',                                                                     {distinct_snp_pos}, {distinct_pathogenic}, {puntuation});"""
-            #print(sql_str)
-            mycursor.execute(sql_str)
-            conn.commit()
+            #print(distinct_aa_refci, distinct_aa_final)
+            puntuation = phat_matrix[dict_matrix[distinct_aa_refci]][dict_matrix[distinct_aa_final]]
+        #sql_str = f"""INSERT INTO snp_phat VALUES ('{distinct_acc}', '{distinct_id}',
+        #    '{distinct_gene}', '{var}', '{distinct_rs}', '{distinct_aa_refci}', 
+        #    '{distinct_aa_final}',{distinct_snp_pos}, {distinct_pathogenic}, {puntuation});"""
+        if type(puntuation) == numpy.int64:
+            puntuation = int(puntuation)
+        mycursor.execute("INSERT INTO snp_phat VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", 
+        (distinct_acc, distinct_id, distinct_gene, var, distinct_rs, distinct_aa_refci,
+        distinct_aa_final, distinct_snp_pos, distinct_pathogenic, puntuation))
+        conn.commit()
 
 #########################################################################################################################################################################
 
 
+print('\nPart II: Extracting frequencies from the PFAM alignment and computing entropy')
 
 no_pfam = set()
 # Entropy
 
 mycursor.execute("DROP TABLE IF EXISTS snp_eval")
-mycursor.execute(
-    "CREATE TABLE snp_eval (acc varchar(20), id varchar(30), pfam varchar(20), snp_id varchar(30), snp_rs varchar(30), aa_ini varchar(30), aa_fin varchar(30), snp_pos int, fx_i float, fx_f float, entropy float, pathogenic int);")
+mycursor.execute("""CREATE TABLE snp_eval (acc varchar(20), id varchar(30),
+    pfam varchar(20), snp_id varchar(30), snp_rs varchar(30),
+    aa_ref varchar(30), aa_mut varchar(30), snp_pos int, subs_mat int,
+     freq_ref float, freq_mut float, entropy float, pathogenic int);""")
 
 ######################################entropia inicial a parti de les regions transmem del arxiu total d'uniprot###########
 
@@ -207,7 +207,7 @@ for aminoacid_dict in diccionario_freq_relatives:
     suma += diccionario_freq_relatives[aminoacid_dict] * log(diccionario_freq_relatives[aminoacid_dict])
 
 entropia_inicial = -suma
-print(entropia_inicial)
+#print(entropia_inicial)
 
 ##########################################################calcul de la frequencia i entropia de la posicio on cau l'snip#######################################
 
@@ -217,7 +217,7 @@ total_acc_list = list()
 for tupple in total_acc_tupple:
     for tot in tupple:
         total_acc_list.append(tot)
-print(total_acc_list)
+#print(total_acc_list)
 
 mycursor.execute("select distinct acc from snp_phat;")
 distinct_acc_tupple = mycursor.fetchall()
@@ -225,9 +225,10 @@ distinct_acc_list = list()
 for tupple in distinct_acc_tupple:
     for acc in tupple:
         distinct_acc_list.append(acc)
-print(distinct_acc_list)
+#print(distinct_acc_list)
 
-for accses in distinct_acc_list:
+for i, accses in enumerate(distinct_acc_list):
+    print(f"Processing {accses} ({i+1} / {total_acc})")
     mycursor.execute("select distinct pfam from receptor_pfam where acc = '" + accses + "';")
     distinct_pfam_tupple = mycursor.fetchall()
     distinct_pfam_list = list()
@@ -259,12 +260,12 @@ for accses in distinct_acc_list:
         for tupple in distinct_snip_tupple:
             for snip in tupple:
                 distinct_snip = snip
-        mycursor.execute("select aa_fin from snp_phat where snp_id = '" + snip_var + "';")
+        mycursor.execute("select aa_mut from snp_phat where snp_id = '" + snip_var + "';")
         distinct_aa_tupple = mycursor.fetchall()
         for tupple in distinct_aa_tupple:
             for aa in tupple:
                 distinct_aa = aa
-        mycursor.execute("select aa_ini from snp_phat where snp_id = '" + snip_var + "';")
+        mycursor.execute("select aa_ref from snp_phat where snp_id = '" + snip_var + "';")
         distinct_aa_i_tupple = mycursor.fetchall()
         for tupple in distinct_aa_i_tupple:
             for aa_i in tupple:
@@ -275,6 +276,12 @@ for accses in distinct_acc_list:
         for tupple in distinct_path_tupple:
             for path in tupple:
                 distinct_path = path
+
+        mycursor.execute("select subs_mat from snp_phat where snp_id = '" + snip_var + "';")
+        distinct_path_tupple = mycursor.fetchall()
+        for tupple in distinct_path_tupple:
+            for subs_mat in tupple:
+                distinct_subs_mat = subs_mat
 
         for pfam_ac in distinct_pfam_list:
             try:
@@ -289,30 +296,35 @@ for accses in distinct_acc_list:
             llista_prot_rs_amino_distinctprot = crear_llista_prot_rs_amino_distinctprot(llista_prot_posicio_total,
                                                                                         llista_prot_posicions_amino)
             freq_entropia = calcul_freq_entropia(llista_prot_rs_amino_distinctprot, entropia_inicial, distinct_aa)
+
             if distinct_aa == 'MISS':
                 freq_entropia = None
             if (freq_entropia == None):
-                fx_i = '-1000'
-                fx_f = '-1000'
-                entropia = '-1000'
-                mycursor.execute(("INSERT INTO snp_eval VALUES" + str((accses, distinct_id, pfam_ac, snip_var,
-                                                                        distinct_snip_rs, distinct_aa_i, distinct_aa,
-                                                                        distinct_snip, fx_i, fx_f, entropia, 
-                                                                        distinct_path))))
-                conn.commit()
+                freq_ref = None
+                freq_mut = None
+                entropia = None
             else:
-                fx_i = float(freq_entropia[0])
-                fx_f = float(freq_entropia[1])
+                freq_ref = float(freq_entropia[0])
+                freq_mut = float(freq_entropia[1])
                 entropia = float(freq_entropia[2])
-                mycursor.execute(("INSERT INTO snp_eval VALUES" + str((accses, distinct_id, pfam_ac, snip_var,
-                                                                        distinct_snip_rs, distinct_aa_i, distinct_aa,
-                                                                        distinct_snip, fx_i, fx_f, entropia, 
-                                                                        distinct_path))))
-                conn.commit()
+
+#                sql_str = f"""INSERT INTO snp_eval VALUES ('{accses}', '{distinct_id}',
+#                            '{pfam_ac}', '{snip_var}', '{distinct_snip_rs}',
+#                            '{distinct_aa_i}', '{distinct_aa}', {distinct_snip}, 
+#                           {distinct_subs_mat}, {freq_ref}, {freq_mut}, {entropia}, {distinct_path});"""
+            #print(sql_str)
+#            mycursor.execute(sql_str)
+
+            mycursor.execute("INSERT INTO snp_eval VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", 
+            (accses, distinct_id, pfam_ac, snip_var, distinct_snip_rs, 
+            distinct_aa_i, distinct_aa, distinct_snip, distinct_subs_mat,
+            freq_ref, freq_mut, entropia, distinct_path))
+            conn.commit()
+
 
 # Delete non-TM
-mycursor.execute("drop table snp_phat;")
-conn.commit()
+#mycursor.execute("drop table snp_phat;")
+#conn.commit()
 print("Proteins with no PFAM alignment:")
 for el in no_pfam:
     print(el, end=' ')

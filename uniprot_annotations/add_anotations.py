@@ -4,7 +4,7 @@
 
 # sites.txt is not included since it was empty
 
-# IT ALSO FIXES -1000 values in fx_i fx_f and entropy in snp_eval
+# IT ALSO FIXES -1000 values in freq_ref freq_mut and entropy in snp_eval
 
 import mysql.connector
 import sqlalchemy
@@ -18,9 +18,12 @@ conn = mysql.connector.connect(host='alf03.uab.cat', user='lmcdb',
 mycursor = conn.cursor()
 
 annotations = ['act_site', 'binding_site', 'metal', 'mod_res', 'carbohyd', 'lipid', 'mutagen']
+annotations_2res = ['disulfide', 'ca_bind', 'dna_bind']
 
-for annotation in annotations:
-    print(annotation)
+
+total = len(annotations + annotations_2res)
+for ii, annotation in enumerate(annotations):
+    print(f'{annotation} ({ii+1}/{total})') 
     try:
         mycursor.execute(f'alter table snp_eval add column {annotation} int(1)')
     except:
@@ -33,11 +36,8 @@ for annotation in annotations:
         mycursor.execute(out)
         conn.commit()
 
-
-annotations_2res = ['disulfide', 'ca_bind', 'dna_bind']
-
-for annotation in annotations_2res:
-    print(annotation)
+for j, annotation in enumerate(annotations_2res):
+    print(f'{annotation} ({j+ii+2}/{total})')
     try:
         mycursor.execute(f'alter table snp_eval add column {annotation} int(1)')
     except:
@@ -59,10 +59,10 @@ for annotation in annotations + annotations_2res:
         conn.commit()
 
 # replace -1000 by NULL
-columns = ['fx_i', 'fx_f', 'entropy']
-for column in columns:
-        out = f"""update snp_eval set {column}=NULL where {column}=-1000"""
-        mycursor.execute(out)
-        conn.commit()
+#columns = ['freq_ref', 'freq_mut', 'entropy']
+#for column in columns:
+#        out = f"""update snp_eval set {column}=NULL where {column}=-1000"""
+#        mycursor.execute(out)
+#        conn.commit()
 
 

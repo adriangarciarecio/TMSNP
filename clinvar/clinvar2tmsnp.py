@@ -22,16 +22,16 @@ three2one = {'Cys': 'C', 'Asp': 'D', 'Ser': 'S', 'Gln': 'Q', 'Lys': 'K',
 
 table_rows = mycursor.fetchall()
 df_tm = pd.DataFrame(table_rows, columns=['acc', 'ini', 'end'])
-df_clinvar = pd.read_csv('clinvar_output.txt', sep=' ', names=['acc', 'snp_pos', 'aa_ini', 'aa_fin', 'pathogenic'])
+df_clinvar = pd.read_csv('clinvar_output.txt', sep=' ', names=['acc', 'snp_pos', 'aa_ref', 'aa_mut', 'pathogenic'])
 df_clinvar['tm'] = 0
-df_clinvar['aa_ini'].replace(three2one, inplace=True)
-df_clinvar['aa_fin'].replace(three2one, inplace=True)
+df_clinvar['aa_ref'].replace(three2one, inplace=True)
+df_clinvar['aa_mut'].replace(three2one, inplace=True)
 df_clinvar['id'] = np.nan
 df_clinvar['snp_id'] = df_clinvar.index
 df_clinvar['snp_id'] = 'CLI_' + df_clinvar['snp_id'].astype(str)
 df_clinvar['gene'] = np.nan
 df_clinvar['snp_rs'] = np.nan
-df_clinvar = df_clinvar[['acc', 'id', 'gene', 'snp_id', 'snp_rs', 'aa_ini', 'aa_fin', 'snp_pos', 'pathogenic']]
+df_clinvar = df_clinvar[['acc', 'id', 'gene', 'snp_id', 'snp_rs', 'aa_ref', 'aa_mut', 'snp_pos', 'pathogenic']]
 
 for i in df_clinvar.index:
     snp_data = df_clinvar.loc[i]

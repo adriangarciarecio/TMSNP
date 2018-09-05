@@ -38,7 +38,7 @@ mycursor.execute("DROP TABLE IF EXISTS snps")
 
 mycursor.execute("CREATE TABLE receptor_pfam (acc varchar(20), pfam varchar(20));")
 mycursor.execute("""CREATE TABLE snps (acc varchar(20), id varchar(30), gene varchar(20), snp_id varchar(30), 
-                    snp_rs varchar(30), aa_ini varchar(30), aa_fin varchar(30), snp_pos int, tm_pos int,
+                    snp_rs varchar(30), aa_ref varchar(30), aa_mut varchar(30), snp_pos int, tm_pos int,
                      pathogenic int, PRIMARY KEY (snp_id));""")
 mycursor.execute("CREATE TABLE tm_segments (acc varchar(20),  tm_start int, tm_final int);")
 

@@ -22,10 +22,10 @@ three2one = {'Cys': 'C', 'Asp': 'D', 'Ser': 'S', 'Gln': 'Q', 'Lys': 'K',
 
 table_rows = mycursor.fetchall()
 df_tm = pd.DataFrame(table_rows, columns=['acc', 'ini', 'end'])
-df_gnomad = pd.read_csv('gnomad.txt', sep='\t', names=['acc', 'snp_pos', 'aa_ini', 'aa_fin'])
+df_gnomad = pd.read_csv('gnomad.txt', sep='\t', names=['acc', 'snp_pos', 'aa_ref', 'aa_mut'])
 df_gnomad['tm'] = 0
-df_gnomad['aa_ini'].replace(three2one, inplace=True)
-df_gnomad['aa_fin'].replace(three2one, inplace=True)
+df_gnomad['aa_ref'].replace(three2one, inplace=True)
+df_gnomad['aa_mut'].replace(three2one, inplace=True)
 df_gnomad['id'] = np.nan
 df_gnomad['snp_id'] = df_gnomad.index
 
@@ -33,7 +33,7 @@ df_gnomad['snp_id'] = 'BIG_' + df_gnomad['snp_id'].astype(str)
 df_gnomad['gene'] = np.nan
 df_gnomad['snp_rs'] = np.nan
 df_gnomad['pathogenic'] = 0
-df_gnomad[['acc', 'id', 'gene', 'snp_id', 'snp_rs', 'aa_ini', 'aa_fin', 'snp_pos', 'pathogenic']]
+df_gnomad[['acc', 'id', 'gene', 'snp_id', 'snp_rs', 'aa_ref', 'aa_mut', 'snp_pos', 'pathogenic']]
 
 total_mut = len(df_gnomad)
 for i in df_gnomad.index:
