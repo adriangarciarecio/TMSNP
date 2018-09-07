@@ -323,8 +323,9 @@ for i, accses in enumerate(distinct_acc_list):
 
 
 # Delete non-TM
-#mycursor.execute("drop table snp_phat;")
-#conn.commit()
+mycursor.execute("drop table snp_phat;")
+conn.commit()
+
 print("Proteins with no PFAM alignment:")
 for el in no_pfam:
     print(el, end=' ')

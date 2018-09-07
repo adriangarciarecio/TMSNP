@@ -34,7 +34,7 @@ df['POSITION'] = df['POSITION'].fillna(0).astype(int)
 
 for i in df.index:
     if i % 100 == 0: print(i)
-    out = f"""update snp_eval set sift={df.loc[i]['prediction']} where acc="{df.loc[i]['PROTEIN_ID']}" and snp_pos={df.loc[i]['POSITION']} and aa_fin="{df.loc[i]['RESIDUE_ALT']}";"""
+    out = f"""update snp_eval set sift={df.loc[i]['prediction']} where acc="{df.loc[i]['PROTEIN_ID']}" and snp_pos={df.loc[i]['POSITION']} and aa_mut="{df.loc[i]['RESIDUE_ALT']}";"""
     #print(out)
     mycursor.execute(out)
     conn.commit()
