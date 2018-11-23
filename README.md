@@ -6,15 +6,17 @@ This is a collection of scripts to set up or update the TMSNP database. They sho
   - ./main/uniprot_tables.py (runs in seconds)
 
 - Get SNPs from Clinvar
-  - Run Mireia's scripts which will create the inputs for **clinvar2tmsnp.py**
+  - Prepare uniprot_list.yxy
+  - ./clinvar/ClinVar.sh
+  - ./clinvar/clinvar2tmsnp.py
   
 - Remove proteins swith non-pathogenic SNPs
   -  ./main/nonpathogenic_proteins.py 
 
 - Get SNPs from Clinvar and GNOMAD 
   - Generate ensembl_list.yxy (PENDING)
-  - gnomad/gnomad.sh
-  - gnomad/gnomad2tmsnp.py (runs in minutes)
+  - ./gnomad/gnomad.sh
+  - ./gnomad/gnomad2tmsnp.py (runs in minutes)
 
 - Check and remove duplicates after combining Uniprot ClinVar and GNOMAD (we keep Uniprot > ClinVar > GNOMAD)
   - ./main/duplicates_3db.py (runs in seconds)
