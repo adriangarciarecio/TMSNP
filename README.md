@@ -32,6 +32,7 @@ This is a collection of scripts to set up or update the TMSNP database. They sho
   - ./main/duplicates_pfam.py
   
 - Add Uniprot annotations relevant to positions
+  - ./uniprot_annotations/Annotations.sh
   - ./uniprot_annotations/add_anotations.py
 
 - Get SIFT and POLYPHEN2 scores
