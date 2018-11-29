@@ -14,7 +14,7 @@ This is a collection of scripts to set up or update the TMSNP database. They sho
   -  ./main/nonpathogenic_proteins.py (runs in seconds)
 
 - Get SNPs from Clinvar and GNOMAD 
-  - Generate ensembl_list.yxy (PENDING)
+  - Generate ensembl_list.txt (*PENDING*)
   - ./gnomad/Gnomad.sh (runs in a few hours)
   - ./gnomad/gnomad2tmsnp.py (runs in minutes)
 
