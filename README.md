@@ -15,7 +15,7 @@ This is a collection of scripts to set up or update the TMSNP database. They sho
 
 - Get SNPs from Clinvar and GNOMAD 
   - Generate ensembl_list.yxy (PENDING)
-  - ./gnomad/gnomad.sh
+  - ./gnomad/Gnomad.sh
   - ./gnomad/gnomad2tmsnp.py (runs in minutes)
 
 - Check and remove duplicates after combining Uniprot ClinVar and GNOMAD (we keep Uniprot > ClinVar > GNOMAD)
