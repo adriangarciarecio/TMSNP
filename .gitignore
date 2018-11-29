@@ -1,0 +1,17 @@
+main/pfam_download_raw/*
+OLD/*
+main/pfam_download/*
+clinvar/clinvar?
+clinvar/clinvar??
+clinvar/clin
+clinvar/clin2
+?
+*.txt
+*.tsv
+*.csv
+clinvargene
+clinvarpatho
+gnomad/gnomad.sav
+gnomad/gnomad2.txt.bak
+main/Pfam-A.full.gz
+.vscode/settings.json

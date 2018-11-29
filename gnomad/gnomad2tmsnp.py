@@ -10,47 +10,85 @@ import pandas as pd
 import numpy as np
 
 # Set the connection
-conn = mysql.connector.connect(host='alf03.uab.cat', user='lmcdb',
-                               password=os.getenv('LMCDB_PASS'), database='tmsnp')
+conn = mysql.connector.connect(
+    host="alf03.uab.cat",
+    user="lmcdb",
+    password=os.getenv("LMCDB_PASS"),
+    database="tmsnp",
+)
 mycursor = conn.cursor()
 mycursor.execute("select * from tm_segments")
 
-three2one = {'Cys': 'C', 'Asp': 'D', 'Ser': 'S', 'Gln': 'Q', 'Lys': 'K',
-    'Ile': 'I', 'Pro': 'P', 'Thr': 'T', 'Phe': 'F', 'Asn': 'N', 'Gly': 'G',
-    'His': 'H', 'Leu': 'L', 'Arg': 'R', 'Trp': 'W', 'Ala': 'A', 'Val':'V',
-    'Glu': 'E', 'Tyr': 'Y', 'Met': 'M'}
+three2one = {
+    "Cys": "C",
+    "Asp": "D",
+    "Ser": "S",
+    "Gln": "Q",
+    "Lys": "K",
+    "Ile": "I",
+    "Pro": "P",
+    "Thr": "T",
+    "Phe": "F",
+    "Asn": "N",
+    "Gly": "G",
+    "His": "H",
+    "Leu": "L",
+    "Arg": "R",
+    "Trp": "W",
+    "Ala": "A",
+    "Val": "V",
+    "Glu": "E",
+    "Tyr": "Y",
+    "Met": "M",
+}
 
 table_rows = mycursor.fetchall()
-df_tm = pd.DataFrame(table_rows, columns=['acc', 'ini', 'end'])
-df_gnomad = pd.read_csv('gnomad.txt', sep='\t', names=['acc', 'snp_pos', 'aa_ref', 'aa_mut'])
-df_gnomad['tm'] = 0
-df_gnomad['aa_ref'].replace(three2one, inplace=True)
-df_gnomad['aa_mut'].replace(three2one, inplace=True)
-df_gnomad['id'] = np.nan
-df_gnomad['snp_id'] = df_gnomad.index
+df_tm = pd.DataFrame(table_rows, columns=["acc", "ini", "end"])
+df_gnomad = pd.read_csv(
+    "gnomad.txt", sep="\t", names=["acc", "snp_pos", "aa_ref", "aa_mut"]
+)
+df_gnomad["tm"] = 0
+df_gnomad["aa_ref"].replace(three2one, inplace=True)
+df_gnomad["aa_mut"].replace(three2one, inplace=True)
+df_gnomad["id"] = np.nan
+df_gnomad["snp_id"] = df_gnomad.index
 
-df_gnomad['snp_id'] = 'BIG_' + df_gnomad['snp_id'].astype(str)
-df_gnomad['gene'] = np.nan
-df_gnomad['snp_rs'] = np.nan
-df_gnomad['pathogenic'] = 0
-df_gnomad[['acc', 'id', 'gene', 'snp_id', 'snp_rs', 'aa_ref', 'aa_mut', 'snp_pos', 'pathogenic']]
+df_gnomad["snp_id"] = "BIG_" + df_gnomad["snp_id"].astype(str)
+df_gnomad["gene"] = np.nan
+df_gnomad["snp_rs"] = np.nan
+df_gnomad["pathogenic"] = 0
+df_gnomad[
+    [
+        "acc",
+        "id",
+        "gene",
+        "snp_id",
+        "snp_rs",
+        "aa_ref",
+        "aa_mut",
+        "snp_pos",
+        "pathogenic",
+    ]
+]
 
 total_mut = len(df_gnomad)
 for i in df_gnomad.index:
     if i % 1000 == 0:
         print(round(i / total_mut * 100, 2))
     snp_data = df_gnomad.loc[i]
-    df_prot_tms = df_tm[df_tm['acc'] == snp_data['acc']]
+    df_prot_tms = df_tm[df_tm["acc"] == snp_data["acc"]]
     for j, row in df_prot_tms.iterrows():
-        if row.ini <= snp_data['snp_pos'] and row.end >= snp_data['snp_pos']:
-           #print(row,  snp_data['snp_pos'])
-           df_gnomad.loc[i, 'tm'] = 1
-           break
+        if row.ini <= snp_data["snp_pos"] and row.end >= snp_data["snp_pos"]:
+            # print(row,  snp_data['snp_pos'])
+            df_gnomad.loc[i, "tm"] = 1
+            break
 
 # Filter TM only and update the database
-df_gnomad_tm = df_gnomad[df_gnomad['tm']==1]
-del df_gnomad_tm['tm']
-#df_gnomad_tm.to_csv('gnomad_tm.csv')
-engine = sqlalchemy.create_engine(f'mysql+mysqlconnector://lmcdb:{os.getenv("LMCDB_PASS")}@alf03.uab.cat/tmsnp')
-df_gnomad_tm.to_sql('snps', engine, if_exists='append', index=False, chunksize=1000)
+df_gnomad_tm = df_gnomad[df_gnomad["tm"] == 1]
+del df_gnomad_tm["tm"]
+# df_gnomad_tm.to_csv('gnomad_tm.csv')
+engine = sqlalchemy.create_engine(
+    f'mysql+mysqlconnector://lmcdb:{os.getenv("LMCDB_PASS")}@alf03.uab.cat/tmsnp'
+)
+df_gnomad_tm.to_sql("snps", engine, if_exists="append", index=False, chunksize=1000)
 
