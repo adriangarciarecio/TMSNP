@@ -1,5 +1,4 @@
 awk '{for(i=1;i<=NF;i++) if ($i=="ACT_SITE") print $1 "\t" $(i+1)}' uniprot_anno.txt > act_site.txt
-
 awk '{for(i=1;i<=NF;i++) if ($i=="BINDING") print $1 "\t" $(i+1)}' uniprot_anno.txt > binding_site.txt
 awk '{for(i=1;i<=NF;i++) if ($i=="MOD_RES") print $1 "\t" $(i+1)}' uniprot_anno.txt > mod_res.txt
 awk '{for(i=1;i<=NF;i++) if ($i=="CARBOHYD") print $1 "\t" $(i+1)}' uniprot_anno.txt > carbohyd.txt

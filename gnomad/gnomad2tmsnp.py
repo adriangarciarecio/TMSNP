@@ -45,7 +45,7 @@ three2one = {
 table_rows = mycursor.fetchall()
 df_tm = pd.DataFrame(table_rows, columns=["acc", "ini", "end"])
 df_gnomad = pd.read_csv(
-    "gnomad.txt", sep="\t", names=["acc", "snp_pos", "aa_ref", "aa_mut"]
+    "gnomad.txt", sep="\t", names=["acc", "snp_pos", "aa_ref", "aa_mut", "gnomad_freq"]
 )
 df_gnomad["tm"] = 0
 df_gnomad["aa_ref"].replace(three2one, inplace=True)
@@ -57,22 +57,9 @@ df_gnomad["snp_id"] = "BIG_" + df_gnomad["snp_id"].astype(str)
 df_gnomad["gene"] = np.nan
 df_gnomad["snp_rs"] = np.nan
 df_gnomad["pathogenic"] = 0
-df_gnomad[
-    [
-        "acc",
-        "id",
-        "gene",
-        "snp_id",
-        "snp_rs",
-        "aa_ref",
-        "aa_mut",
-        "snp_pos",
-        "pathogenic",
-    ]
-]
 
 total_mut = len(df_gnomad)
-for i in df_gnomad.index:
+for i in df_gnomad.index:  # range(3000):  for testing
     if i % 1000 == 0:
         print(round(i / total_mut * 100, 2))
     snp_data = df_gnomad.loc[i]
@@ -86,9 +73,20 @@ for i in df_gnomad.index:
 # Filter TM only and update the database
 df_gnomad_tm = df_gnomad[df_gnomad["tm"] == 1]
 del df_gnomad_tm["tm"]
+
+# Add pathogenic column
+try:
+    mycursor.execute(
+        "alter table snps add column gnomad_freq float(20,10) after pathogenic"
+    )
+except:
+    pass
+
 # df_gnomad_tm.to_csv('gnomad_tm.csv')
 engine = sqlalchemy.create_engine(
     f'mysql+mysqlconnector://lmcdb:{os.getenv("LMCDB_PASS")}@alf03.uab.cat/tmsnp'
 )
 df_gnomad_tm.to_sql("snps", engine, if_exists="append", index=False, chunksize=1000)
 
+# in case of problems:
+# delete * from snps where gnomad_freq is not NULL;

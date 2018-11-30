@@ -18,7 +18,7 @@ conn = mysql.connector.connect(
 mycursor = conn.cursor()
 
 mycursor.execute(
-    "select acc, id, pfam, snp_id, snp_rs, aa_ref, aa_mut, snp_pos, subs_mat, freq_ref, freq_mut, entropy, pathogenic from snp_eval"
+    "select acc, id, pfam, snp_id, snp_rs, aa_ref, aa_mut, snp_pos, subs_mat, freq_ref, freq_mut, entropy, pathogenic, gnomad_freq from snp_eval"
 )
 
 
@@ -39,6 +39,7 @@ df = pd.DataFrame(
         "freq_mut",
         "entropy",
         "pathogenic",
+        "gnomad_freq",
     ],
 )
 # Fix spaces in amino acids? This should go in previous scripts
