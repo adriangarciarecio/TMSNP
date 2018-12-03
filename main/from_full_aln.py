@@ -7,7 +7,10 @@ from iker_snp import *
 # Dirs where PFAM downloaded files will go
 pfam_download_path = "./pfam_download/"
 pfam_download_path_sys = pfam_download_path[:-1]
+
 pfam_download_raw = "./pfam_download_raw/"
+if not os.path.exists(pfam_download_raw):
+    os.makedirs(pfam_download_raw)
 pfam_download_raw_sys = pfam_download_raw[:-1]
 pfam_full = "./Pfam-A.full.gz"
 

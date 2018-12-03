@@ -10,6 +10,10 @@ from iker_snp import *
 
 
 pfam_download_path = "./pfam_download/"
+
+if not os.path.exists(pfam_download_path):
+    os.makedirs(pfam_download_path)
+
 pfam_download_path_sys = pfam_download_path[:-1]
 
 # Set the connection
