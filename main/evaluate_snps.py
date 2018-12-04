@@ -160,7 +160,8 @@ mycursor.execute(
 ################################################################################
 
 total_acc = len(distinct_acc_list)
-for i, distinct_acc in enumerate(distinct_acc_list):  # for testing: truncate the list
+# for testing: truncate distinct_acc_list
+for i, distinct_acc in enumerate(distinct_acc_list):
     print(f"Processing {distinct_acc} ({i+1} / {total_acc})")
     mycursor.execute(
         "select distinct snp_id from snps where acc = '" + distinct_acc + "';"
@@ -424,6 +425,14 @@ for i, accses in enumerate(distinct_acc_list):
                 distinct_path = path
 
         mycursor.execute(
+            "select gnomad_freq from snp_phat where snp_id = '" + snip_var + "';"
+        )
+        distinct_gnomadfreq_tupple = mycursor.fetchall()
+        for tupple in distinct_gnomadfreq_tupple:
+            for gnomad_freq in tupple:
+                distinct_gnomadfreq = gnomad_freq
+
+        mycursor.execute(
             "select subs_mat from snp_phat where snp_id = '" + snip_var + "';"
         )
         distinct_path_tupple = mycursor.fetchall()
@@ -492,8 +501,8 @@ for i, accses in enumerate(distinct_acc_list):
 
 
 # Delete non-TM
-mycursor.execute("drop table snp_phat;")
-conn.commit()
+# mycursor.execute("drop table snp_phat;")
+# conn.commit()
 
 print("Proteins with no PFAM alignment:")
 for el in no_pfam:
