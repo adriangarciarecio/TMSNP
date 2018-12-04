@@ -6,8 +6,7 @@ import os
 import subprocess
 from iker_snp import *
 
-########################################seleccionar els diferents pfam de les taules de mysql#####################3
-
+###seleccionar els diferents pfam de les taules de mysql#####################3
 
 pfam_download_path = "./pfam_download/"
 
@@ -64,8 +63,7 @@ for i, pfam_key in enumerate(distinct_pfam_list):
     run_curl(link, pfam_download_path + pfam_key)
 
 print("... Done!!!")
-#########################################################################################################################################################################
-
+################################################################################
 # Manage errors
 
 print("Trying to get alignments that were not downloaded...")

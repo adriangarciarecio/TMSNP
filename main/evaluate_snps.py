@@ -133,7 +133,19 @@ dict_matrix = {
     "V": 19,
 }
 
-###############################################################################################
+################################################################################
+# Not used until part II but run at start in case of connection problems
+
+# All Human TM proteins tagged as reviewed
+print("... Getting list of TM proteins from the Uniprot")
+url_uniprot = "http://www.uniprot.org/uniprot/?query=annotation%3A%28type%3Atransmem%29+AND+organism%3A%22Homo+sapiens+%5B9606%5D%22+AND+reviewed%3Ayes&sort=score&format=txt"
+req = requests.get(url_uniprot)
+print("... Got list of TM proteins!")
+data_llista = (
+    req.text.splitlines()
+)  # before: data_llista = file_to_lines(uniprot_filename)
+
+################################################################################
 
 print("\nPart I: Evaluating subsitutions based in the Phat matrix")
 
@@ -141,13 +153,14 @@ mycursor.execute("DROP TABLE IF EXISTS snp_phat")
 mycursor.execute(
     """CREATE TABLE snp_phat (acc varchar(20), id varchar(30), gene varchar(20),
                     snp_id varchar(30), snp_rs varchar(30), aa_ref varchar(30), 
-                    aa_mut varchar(30), snp_pos int, pathogenic int, subs_mat int);"""
+                    aa_mut varchar(30), snp_pos int, pathogenic int,
+                    gnomad_freq float(20,10), subs_mat int);"""
 )
 
-########################################################################################33
+################################################################################
 
 total_acc = len(distinct_acc_list)
-for i, distinct_acc in enumerate(distinct_acc_list):
+for i, distinct_acc in enumerate(distinct_acc_list):  # for testing: truncate the list
     print(f"Processing {distinct_acc} ({i+1} / {total_acc})")
     mycursor.execute(
         "select distinct snp_id from snps where acc = '" + distinct_acc + "';"
@@ -209,6 +222,12 @@ for i, distinct_acc in enumerate(distinct_acc_list):
         for tupple in distinct_pathogenic_tupple:
             for pathogenic in tupple:
                 distinct_pathogenic = pathogenic
+
+        mycursor.execute("select gnomad_freq from snps where snp_id = '" + var + "';")
+        distinct_gnomadfreq_tupple = mycursor.fetchall()
+        for tupple in distinct_gnomadfreq_tupple:
+            for gnomadfreq in tupple:
+                distinct_gnomadfreq = gnomadfreq
         ## Changes here
         if (
             len(distinct_aa_refci) >= 2
@@ -227,7 +246,7 @@ for i, distinct_acc in enumerate(distinct_acc_list):
         if type(puntuation) == numpy.int64:
             puntuation = int(puntuation)
         mycursor.execute(
-            "INSERT INTO snp_phat VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            "INSERT INTO snp_phat VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
             (
                 distinct_acc,
                 distinct_id,
@@ -238,13 +257,13 @@ for i, distinct_acc in enumerate(distinct_acc_list):
                 distinct_aa_final,
                 distinct_snp_pos,
                 distinct_pathogenic,
+                distinct_gnomadfreq,
                 puntuation,
             ),
         )
         conn.commit()
 
-#########################################################################################################################################################################
-
+################################################################################
 
 print("\nPart II: Extracting frequencies from the PFAM alignment and computing entropy")
 
@@ -255,18 +274,11 @@ mycursor.execute("DROP TABLE IF EXISTS snp_eval")
 mycursor.execute(
     """CREATE TABLE snp_eval (acc varchar(20), id varchar(30),
     pfam varchar(20), snp_id varchar(30), snp_rs varchar(30),
-    aa_ref varchar(30), aa_mut varchar(30), snp_pos int, subs_mat int,
+    aa_ref varchar(30), aa_mut varchar(30), snp_pos int, gnomad_freq float(20,10), subs_mat int,
      freq_ref float, freq_mut float, entropy float, pathogenic int);"""
 )
 
-######################################entropia inicial a parti de les regions transmem del arxiu total d'uniprot###########
-
-# All Human TM proteins tagged as reviewed
-url_uniprot = "http://www.uniprot.org/uniprot/?query=annotation%3A%28type%3Atransmem%29+AND+organism%3A%22Homo+sapiens+%5B9606%5D%22+AND+reviewed%3Ayes&sort=score&format=txt"
-req = requests.get(url_uniprot)
-data_llista = (
-    req.text.splitlines()
-)  # before: data_llista = file_to_lines(uniprot_filename)
+## entropia inicial a parti de les regions transmem del arxiu total d'uniprot
 
 data_taula_protines_entropia = extract_data_taula_proteines_entropia(data_llista)
 data_locations_taula_snip_regions_entropia = crear_llista_prot_seqamino_entropia(
@@ -332,8 +344,7 @@ for aminoacid_dict in diccionario_freq_relatives:
 entropia_inicial = -suma
 # print(entropia_inicial)
 
-##########################################################calcul de la frequencia i entropia de la posicio on cau l'snip#######################################
-
+## calcul de la frequencia i entropia de la posicio on cau l'snip###############
 mycursor.execute("select distinct acc from snps;")
 total_acc_tupple = mycursor.fetchall()
 total_acc_list = list()
@@ -459,7 +470,7 @@ for i, accses in enumerate(distinct_acc_list):
             #            mycursor.execute(sql_str)
 
             mycursor.execute(
-                "INSERT INTO snp_eval VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                "INSERT INTO snp_eval VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                 (
                     accses,
                     distinct_id,
@@ -469,6 +480,7 @@ for i, accses in enumerate(distinct_acc_list):
                     distinct_aa_i,
                     distinct_aa,
                     distinct_snip,
+                    distinct_gnomadfreq,
                     distinct_subs_mat,
                     freq_ref,
                     freq_mut,

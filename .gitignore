@@ -15,3 +15,4 @@ gnomad/gnomad.sav
 gnomad/gnomad2.txt.bak
 main/Pfam-A.full.gz
 .vscode/settings.json
+main/__pycache__/iker_snp.cpython-36.pyc
