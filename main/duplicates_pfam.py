@@ -18,7 +18,8 @@ conn = mysql.connector.connect(
 mycursor = conn.cursor()
 
 mycursor.execute(
-    "select acc, id, pfam, snp_id, snp_rs, aa_ref, aa_mut, snp_pos, subs_mat, freq_ref, freq_mut, entropy, pathogenic, gnomad_freq from snp_eval"
+    """select acc, id, pfam, snp_id, snp_rs, aa_ref, aa_mut, snp_pos, gnomad_freq,
+    subs_mat, freq_ref, freq_mut, entropy, pathogenic from snp_eval"""
 )
 
 
@@ -34,12 +35,12 @@ df = pd.DataFrame(
         "aa_ref",
         "aa_mut",
         "snp_pos",
+        "gnomad_freq",
         "subs_mat",
         "freq_ref",
         "freq_mut",
         "entropy",
         "pathogenic",
-        "gnomad_freq",
     ],
 )
 # Fix spaces in amino acids? This should go in previous scripts
@@ -53,4 +54,4 @@ df_unique = df_unique.sort_values(["acc", "snp_pos", "snp_id"])
 engine = sqlalchemy.create_engine(
     f'mysql+mysqlconnector://lmcdb:{os.getenv("LMCDB_PASS")}@alf03.uab.cat/tmsnp'
 )
-df_unique.to_sql("snp_eval", engine, if_exists="replace", index=False, chunksize=10000)
+df_unique.to_sql("snp_eval", engine, if_exists="replace", index=False, chunksize=5000)
