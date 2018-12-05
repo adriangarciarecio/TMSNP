@@ -41,3 +41,6 @@ This is a collection of scripts to set up or update the TMSNP database. They sho
   - The output should be saved and processed with the following scipts.
   - ./sift_polyphen/addtotable_sift.py
   - ./sift_polyphen/addtotable_polyphen.py
+  - 
+- Export table to .csv file
+  - $ mysql -u lmcdb -h alf03.uab.cat -p$LMCDB_PASS tmsnp -B -e "select * from snp_eval;" > tmsnps_12-2018.csv
