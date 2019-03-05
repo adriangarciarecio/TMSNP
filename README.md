@@ -2,7 +2,7 @@
 
 This is a collection of scripts to set up or update the TMSNP database. They should be executed in the order listed here.
 
-- Get SNPs from the Uniprot and also the TM helix annotations (mainly Iker’s stuff)
+- Get SNPs from the Uniprot and also the TM helix annotations (mainly Iker’s stuff). This starts with the list of all membrane proteins in Uniprot at each time the script runs. Creates the MySQL tables receptor_pfam (contains Uniprot ID - multiple PFAM ID relations), tm_segments (start end of each TM segment and linked to Uniprot ID), and snp (all info).
   - ./main/uniprot_tables.py (runs in seconds)
 
 - Get SNPs from Clinvar (all programs run in seconds)
