@@ -16,8 +16,9 @@ engine = sqlalchemy.create_engine(
 data = pd.read_sql("select * from receptor_pfam;", engine)
 acc = data.acc
 pfam = data.pfam
-new_pfam = list(pfam)
-new_acc = list(acc)
+dic_ap = {}
+new_acc = []
+new_pfam = []
 acc = data.acc.unique()
 print("> Getting PFAM codes for accession!")
 for i, a in enumerate(acc):
@@ -26,20 +27,20 @@ for i, a in enumerate(acc):
     r = requests.get(url)
     soup = BeautifulSoup(r.text, "html.parser")
     b = soup.find_all("td", text="Pfam")
-    if len(b) != 1:
-        for element in b:
-            ele = str(element).split('"')
-            ele = ele[1].split("_")
-            if ele[1] not in new_pfam:
-                new_pfam.append(str(ele[1]))
-                new_acc.append(a)
-
-    else:
-        b = str(b).split('"')
-        b = b[1].split("_")
-        if b[1] not in new_pfam:
-            new_pfam.append(str(b[1]))
-            new_acc.append(a)
+    for element in b:
+        ele = str(element).split('"')
+        ele = ele[1].split("_")
+        if a not in dic_ap.keys():
+            dic_ap[a] = [ele[1]]
+        if ele[1] not in dic_ap[a]:
+            dic_ap[a].append(ele[1])
+print(dic_ap)
+# We have dictionary with each accession with all pfam contained in, now we need to extract two list ACC/PFAM
+for key in dic_ap.keys():
+    pfams = dic_ap[key]
+    for p in pfams:
+        new_acc.append(key)
+        new_pfam.append(p)
 
 pfam_codes = pd.DataFrame({"acc": new_acc, "pfam": new_pfam})
 
