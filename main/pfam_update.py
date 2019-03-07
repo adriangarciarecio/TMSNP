@@ -34,7 +34,6 @@ for i, a in enumerate(acc):
             dic_ap[a] = [ele[1]]
         if ele[1] not in dic_ap[a]:
             dic_ap[a].append(ele[1])
-print(dic_ap)
 # We have dictionary with each accession with all pfam contained in, now we need to extract two list ACC/PFAM
 for key in dic_ap.keys():
     pfams = dic_ap[key]
