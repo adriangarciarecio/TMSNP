@@ -7,22 +7,21 @@ import sqlalchemy
 import os
 import pandas as pd
 import numpy as np
+import sqlalchemy as sql
 
 # Set the connection
-conn = mysql.connector.connect(
-    host="alf03.uab.cat",
-    user="lmcdb",
-    password=os.getenv("LMCDB_PASS"),
-    database="tmsnp",
-)
-mycursor = conn.cursor()
+# engine = sql.create_engine(
+#     f"mysql://lmcdb:{os.getenv('LMCDB_PASS')}@alf03.uab.cat/tmsnp"
+# )
+engine = sql.create_engine(f"mysql://adrian:compmod5@localhost/tmsnp")
+connection = engine.connect()
 
 try:
-    mycursor.execute("alter table snp_eval add column pph2 int(1)")
+    connection.execute("alter table snp_eval add column pph2 int(1)")
 except:
     pass
 try:
-    mycursor.execute("alter table snp_eval add column sift int(1)")
+    connection.execute("alter table snp_eval add column sift int(1)")
 except:
     pass
 
@@ -41,8 +40,7 @@ df["POSITION"] = df["POSITION"].fillna(0).astype(int)
 for i in df.index:
     if i % 100 == 0:
         print(i)
-    out = f"""update snp_eval set sift={df.loc[i]['prediction']} where acc="{df.loc[i]['PROTEIN_ID']}" and snp_pos={df.loc[i]['POSITION']} and aa_mut="{df.loc[i]['RESIDUE_ALT']}";"""
-    # print(out)
-    mycursor.execute(out)
-    conn.commit()
-
+    connection.execute(
+        f"""update snp_eval set sift={df.loc[i]['prediction']} where acc="{df.loc[i]['PROTEIN_ID']}" and snp_pos={df.loc[i]['POSITION']} and aa_mut="{df.loc[i]['RESIDUE_ALT']}";"""
+    )
+connection.close()

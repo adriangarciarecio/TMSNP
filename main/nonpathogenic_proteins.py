@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 
-import sqlalchemy
+import sqlalchemy as sql
 import os
 import pandas as pd
 
 
 # Removes proteins that do not contain any Pathogenic SNP
 
-engine = sqlalchemy.create_engine(
-    f'mysql+mysqlconnector://lmcdb:{os.getenv("LMCDB_PASS")}@alf03.uab.cat/tmsnp'
-)
+# Set the connection
+# engine = sql.create_engine(
+#     f"mysql://lmcdb:{os.getenv('LMCDB_PASS')}@alf03.uab.cat/tmsnp"
+# )
+engine = sql.create_engine(f"mysql://adrian:compmod5@localhost/tmsnp")
 
 snps = pd.read_sql("SELECT * FROM snps", engine)
 proteins = snps["acc"].unique()

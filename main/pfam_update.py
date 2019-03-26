@@ -3,15 +3,17 @@ import numpy as np
 import math
 import pandas as pd
 import mysql.connector
-import sqlalchemy
+import sqlalchemy as sql
 import os
 from bs4 import BeautifulSoup
 import requests
 import re
 
-engine = sqlalchemy.create_engine(
-    f"mysql://lmcdb:{os.getenv('LMCDB_PASS')}@alf03.uab.cat/tmsnp"
-)
+# engine = sql.create_engine(
+#     f"mysql://lmcdb:{os.getenv('LMCDB_PASS')}@alf03.uab.cat/tmsnp"
+# )
+
+engine = sql.create_engine(f"mysql://adrian:compmod5@localhost/tmsnp")
 
 data = pd.read_sql("select * from receptor_pfam;", engine)
 acc = data.acc

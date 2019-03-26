@@ -4,20 +4,17 @@
 # Takes the TMs from the MySQL tabe
 
 import mysql.connector
-import sqlalchemy
+import sqlalchemy as sql
 import os
 import pandas as pd
 import numpy as np
 
 # Set the connection
-conn = mysql.connector.connect(
-    host="alf03.uab.cat",
-    user="lmcdb",
-    password=os.getenv("LMCDB_PASS"),
-    database="tmsnp",
-)
-mycursor = conn.cursor()
-mycursor.execute("select * from tm_segments")
+# engine = sql.create_engine(
+#     f"mysql://lmcdb:{os.getenv('LMCDB_PASS')}@alf03.uab.cat/tmsnp"
+# )
+engine = sql.create_engine(f"mysql://adrian:compmod5@localhost/tmsnp")
+connection = engine.connect()
 
 three2one = {
     "Cys": "C",
@@ -42,8 +39,7 @@ three2one = {
     "Met": "M",
 }
 
-table_rows = mycursor.fetchall()
-df_tm = pd.DataFrame(table_rows, columns=["acc", "ini", "end"])
+df_tm = pd.read_sql("select * from tm_segments", engine)
 df_clinvar = pd.read_csv(
     "clinvar_output.txt",
     sep=" ",
@@ -75,7 +71,7 @@ for i in df_clinvar.index:
     snp_data = df_clinvar.loc[i]
     df_prot_tms = df_tm[df_tm["acc"] == snp_data["acc"]]
     for j, row in df_prot_tms.iterrows():
-        if row.ini <= snp_data["snp_pos"] and row.end >= snp_data["snp_pos"]:
+        if row.tm_start <= snp_data["snp_pos"] and row.tm_final >= snp_data["snp_pos"]:
             # print(row,  snp_data['snp_pos'])
             df_clinvar.loc[i, "tm"] = 1
             break
@@ -84,7 +80,5 @@ for i in df_clinvar.index:
 df_clinvar_tm = df_clinvar[df_clinvar["tm"] == 1]
 del df_clinvar_tm["tm"]
 df_clinvar_tm.to_csv("clinvar_tm.csv")
-engine = sqlalchemy.create_engine(
-    f'mysql+mysqlconnector://lmcdb:{os.getenv("LMCDB_PASS")}@alf03.uab.cat/tmsnp'
-)
 df_clinvar_tm.to_sql("snps", engine, if_exists="append", index=False)
+connection.close()

@@ -4,20 +4,17 @@
 # Takes the TMs from the MySQL tabe
 
 import mysql.connector
-import sqlalchemy
+import sqlalchemy as sql
 import os
 import pandas as pd
 import numpy as np
 
 # Set the connection
-conn = mysql.connector.connect(
-    host="alf03.uab.cat",
-    user="lmcdb",
-    password=os.getenv("LMCDB_PASS"),
-    database="tmsnp",
-)
-mycursor = conn.cursor()
-mycursor.execute("select * from tm_segments")
+# engine = sql.create_engine(
+#     f"mysql://lmcdb:{os.getenv('LMCDB_PASS')}@alf03.uab.cat/tmsnp"
+# )
+engine = sql.create_engine(f"mysql://adrian:compmod5@localhost/tmsnp")
+connection = engine.connect()
 
 three2one = {
     "Cys": "C",
@@ -42,8 +39,7 @@ three2one = {
     "Met": "M",
 }
 
-table_rows = mycursor.fetchall()
-df_tm = pd.DataFrame(table_rows, columns=["acc", "ini", "end"])
+df_tm = pd.read_sql("select * from tm_segments;", engine)
 df_gnomad = pd.read_csv(
     "gnomad.txt", sep="\t", names=["acc", "snp_pos", "aa_ref", "aa_mut", "gnomad_freq"]
 )
@@ -65,7 +61,7 @@ for i in df_gnomad.index:  # range(3000):  for testing
     snp_data = df_gnomad.loc[i]
     df_prot_tms = df_tm[df_tm["acc"] == snp_data["acc"]]
     for j, row in df_prot_tms.iterrows():
-        if row.ini <= snp_data["snp_pos"] and row.end >= snp_data["snp_pos"]:
+        if row.tm_start <= snp_data["snp_pos"] and row.tm_final >= snp_data["snp_pos"]:
             # print(row,  snp_data['snp_pos'])
             df_gnomad.loc[i, "tm"] = 1
             break
@@ -76,17 +72,16 @@ del df_gnomad_tm["tm"]
 
 # Add pathogenic column
 try:
-    mycursor.execute(
-        "alter table snps add column gnomad_freq float(20,10) after pathogenic"
+    connection.execute(
+        "alter table snps add column gnomad_freq float(20,10) after pathogenic;"
     )
 except:
     pass
 
 # df_gnomad_tm.to_csv('gnomad_tm.csv')
-engine = sqlalchemy.create_engine(
-    f'mysql+mysqlconnector://lmcdb:{os.getenv("LMCDB_PASS")}@alf03.uab.cat/tmsnp'
-)
+
 df_gnomad_tm.to_sql("snps", engine, if_exists="append", index=False, chunksize=1000)
 
 # in case of problems:
 # delete * from snps where gnomad_freq is not NULL;
+connection.close()

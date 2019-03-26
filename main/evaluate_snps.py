@@ -10,39 +10,30 @@ import subprocess
 import mysql.connector
 import os
 import collections
+import sqlalchemy as sql
+import pandas as pd
 from iker_snp import *
 
-
-pfam_download_path = "./pfam_download/"
+path_pfam = "./pfam/pfam_download/"
 
 # Set the connection
-conn = mysql.connector.connect(
-    host="alf03.uab.cat",
-    user="lmcdb",
-    password=os.getenv("LMCDB_PASS"),
-    database="tmsnp",
-)
-mycursor = conn.cursor()
-
+# engine = sql.create_engine(
+#     f"mysql://lmcdb:{os.getenv('LMCDB_PASS')}@alf03.uab.cat/tmsnp"
+# )
+engine = sql.create_engine(f"mysql://adrian:compmod5@localhost/tmsnp")
+connection = engine.connect()
 
 # Delete non-TM
-mycursor.execute("drop table if exists snp_val;")
-conn.commit()
+connection.execute("drop table if exists snp_val;")
 
 print("Evaluating SNPs based on the PFAM alignment")
 
-mycursor.execute("select distinct acc from snps;")
-distinct_acc_tupple = mycursor.fetchall()
-distinct_acc_list = list()
-for tupple in distinct_acc_tupple:
-    for acc in tupple:
-        distinct_acc_list.append(acc)
+data = pd.read_sql("select distinct acc from snps;", engine)
+l_acc = data.acc
 
-# print(distinct_acc_list)
+# print(l_acc)
 
 ###################################################################################
-
-
 phat_matrix = np.array(
     [
         [5, -6, -2, -5, 1, -3, -5, 1, -3, 0, -1, -7, -1, -1, -3, 2, 0, -4, -3, 1],
@@ -135,144 +126,146 @@ dict_matrix = {
 
 ################################################################################
 # Not used until part II but run at start in case of connection problems
-
+phat_max = True
 # All Human TM proteins tagged as reviewed
 print("... Getting list of TM proteins from the Uniprot")
 url_uniprot = "http://www.uniprot.org/uniprot/?query=annotation%3A%28type%3Atransmem%29+AND+organism%3A%22Homo+sapiens+%5B9606%5D%22+AND+reviewed%3Ayes&sort=score&format=txt"
 req = requests.get(url_uniprot)
 print("... Got list of TM proteins!")
-data_llista = (
-    req.text.splitlines()
-)  # before: data_llista = file_to_lines(uniprot_filename)
-
+l_data = req.text.splitlines()  # before: l_data = file_to_lines(uniprot_filename)
+total_acc = len(l_acc)
+# l_acc = ["Q9Y653"]
 ################################################################################
+if phat_max == True:
+    ################################################################################
+    print("\nPart I: Evaluating subsitutions based in the Phat matrix")
 
-print("\nPart I: Evaluating subsitutions based in the Phat matrix")
-
-mycursor.execute("DROP TABLE IF EXISTS snp_phat")
-mycursor.execute(
-    """CREATE TABLE snp_phat (acc varchar(20), id varchar(30), gene varchar(20),
-                    snp_id varchar(30), snp_rs varchar(30), aa_ref varchar(30), 
-                    aa_mut varchar(30), snp_pos int, pathogenic int,
-                    gnomad_freq float(20,10), subs_mat int);"""
-)
-
-################################################################################
-
-total_acc = len(distinct_acc_list)
-# for testing: truncate distinct_acc_list
-for i, distinct_acc in enumerate(distinct_acc_list):
-    print(f"Processing {distinct_acc} ({i+1} / {total_acc})")
-    mycursor.execute(
-        "select distinct snp_id from snps where acc = '" + distinct_acc + "';"
+    connection.execute("DROP TABLE IF EXISTS snp_phat")
+    connection.execute(
+        """CREATE TABLE snp_phat (acc varchar(20), id varchar(30), gene varchar(20),
+                        snp_id varchar(30), snp_rs varchar(30), aa_ref varchar(30),
+                        aa_mut varchar(30), snp_pos int, pathogenic int,
+                        gnomad_freq float(20,10), subs_mat int);"""
     )
-    distinct_var_tupple = mycursor.fetchall()
-    distinct_var_list = list()
-    for tupple in distinct_var_tupple:
-        for var in tupple:
-            distinct_var_list.append(var)
-
-    for var in distinct_var_list:
-        mycursor.execute("select aa_ref from snps where snp_id = '" + var + "';")
-        distinct_aa_refci_tupple = mycursor.fetchall()
-        for tupple in distinct_aa_refci_tupple:
-            for aa_refci in tupple:
-                distinct_aa_refci = aa_refci.strip()
-
-        mycursor.execute("select aa_mut from snps where snp_id = '" + var + "';")
-        distinct_aa_final_tupple = mycursor.fetchall()
-        for tupple in distinct_aa_final_tupple:
-            for aa_final in tupple:
-                distinct_aa_final = aa_final.strip()
-
-        mycursor.execute("select id from snps where snp_id = '" + var + "';")
-        distinct_id_tupple = mycursor.fetchall()
-        for tupple in distinct_id_tupple:
-            for id in tupple:
-                if type(id) == str:
-                    distinct_id = id.strip()
-                else:
-                    distinct_id = id
-
-        mycursor.execute("select gene from snps where snp_id = '" + var + "';")
-        distinct_gene_tupple = mycursor.fetchall()
-        for tupple in distinct_gene_tupple:
-            for gene in tupple:
-                if type(gene) == str:
-                    distinct_gene = gene.strip()
-                else:
-                    distinct_gene = gene
-
-        mycursor.execute("select snp_rs from snps where snp_id = '" + var + "';")
-        distinct_rs_tupple = mycursor.fetchall()
-        for tupple in distinct_rs_tupple:
-            for rs in tupple:
-                if type(rs) == str:
-                    distinct_rs = rs.strip()
-                else:
-                    distinct_rs = rs
-
-        mycursor.execute("select snp_pos from snps where snp_id = '" + var + "';")
-        distinct_snp_pos_tupple = mycursor.fetchall()
-        for tupple in distinct_snp_pos_tupple:
-            for snp_pos in tupple:
-                distinct_snp_pos = snp_pos
-
-        mycursor.execute("select pathogenic from snps where snp_id = '" + var + "';")
-        distinct_pathogenic_tupple = mycursor.fetchall()
-        for tupple in distinct_pathogenic_tupple:
-            for pathogenic in tupple:
-                distinct_pathogenic = pathogenic
-
-        mycursor.execute("select gnomad_freq from snps where snp_id = '" + var + "';")
-        distinct_gnomadfreq_tupple = mycursor.fetchall()
-        for tupple in distinct_gnomadfreq_tupple:
-            for gnomadfreq in tupple:
-                distinct_gnomadfreq = gnomadfreq
-        ## Changes here
-        if (
-            len(distinct_aa_refci) >= 2
-            or len(distinct_aa_final) >= 2
-            or distinct_aa_final == "/"
-        ):
-            puntuation = None  # -1000
-        else:
-            # print(distinct_aa_refci, distinct_aa_final)
-            puntuation = phat_matrix[dict_matrix[distinct_aa_refci]][
-                dict_matrix[distinct_aa_final]
-            ]
-        # sql_str = f"""INSERT INTO snp_phat VALUES ('{distinct_acc}', '{distinct_id}',
-        #    '{distinct_gene}', '{var}', '{distinct_rs}', '{distinct_aa_refci}',
-        #    '{distinct_aa_final}',{distinct_snp_pos}, {distinct_pathogenic}, {puntuation});"""
-        if type(puntuation) == numpy.int64:
-            puntuation = int(puntuation)
-        mycursor.execute(
-            "INSERT INTO snp_phat VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-            (
-                distinct_acc,
-                distinct_id,
-                distinct_gene,
-                var,
-                distinct_rs,
-                distinct_aa_refci,
-                distinct_aa_final,
-                distinct_snp_pos,
-                distinct_pathogenic,
-                distinct_gnomadfreq,
-                puntuation,
-            ),
+    ################################################################################
+    # for testing: truncate l_acc
+    for i, acc in enumerate(l_acc):
+        print(f"Processing {acc} ({i+1} / {total_acc})")
+        data = pd.read_sql(
+            "select tm_start, tm_final from tm_segments where acc = '" + acc + "';",
+            engine,
         )
-        conn.commit()
+        reg_start = data.tm_start
+        reg_start = list(reg_start)
+        reg_end = data.tm_final
+        reg_end = list(reg_end)
 
-################################################################################
+        data = pd.read_sql(
+            "select distinct snp_id from snps where acc = '" + acc + "';", engine
+        )
+        l_var = data.snp_id
+        l_var = list(l_var)
+
+        for var in l_var:
+            data = pd.read_sql(
+                "select aa_ref from snps where snp_id = '" + var + "';", engine
+            )
+            aa_ref = data.aa_ref
+            aa_ref = list(aa_ref)
+            aa_ref = aa_ref[0]
+
+            data = pd.read_sql(
+                "select aa_mut from snps where snp_id = '" + var + "';", engine
+            )
+            aa_mut = data.aa_mut
+            aa_mut = list(aa_mut)
+            aa_mut = aa_mut[0]
+
+            data = pd.read_sql(
+                "select id from snps where snp_id = '" + var + "';", engine
+            )
+            id = data.id
+            id = list(id)
+            id = id[0]
+
+            data = pd.read_sql(
+                "select gene from snps where snp_id = '" + var + "';", engine
+            )
+            gene = data.gene
+            gene = list(gene)
+            gene = gene[0]
+
+            data = pd.read_sql(
+                "select snp_rs from snps where snp_id = '" + var + "';", engine
+            )
+            rs = data.snp_rs
+            rs = list(rs)
+            rs = rs[0]
+
+            data = pd.read_sql(
+                "select snp_pos from snps where snp_id = '" + var + "';", engine
+            )
+            snp_pos = data.snp_pos
+            snp_pos = list(snp_pos)
+            snp_pos = snp_pos[0]
+
+            tm_okey = False
+            for i, pos in enumerate(reg_start):
+                if snp_pos >= pos and snp_pos <= reg_end[i]:
+                    tm_okey = True
+                else:
+                    continue
+
+            data = pd.read_sql(
+                "select pathogenic from snps where snp_id = '" + var + "';", engine
+            )
+            patho = data.pathogenic
+            patho = list(patho)
+            patho = patho[0]
+
+            data = pd.read_sql(
+                "select gnomad_freq from snps where snp_id = '" + var + "';", engine
+            )
+            gno_freq = data.gnomad_freq
+            gno_freq = list(gno_freq)
+            gno_freq = gno_freq[0]
+
+            if tm_okey == True:
+                ## Changes here
+                if len(aa_ref) >= 2 or len(aa_mut) >= 2 or aa_mut == "/":
+                    score = None  # -1000
+                else:
+                    # print(aa_ref, aa_mut)
+                    score = phat_matrix[dict_matrix[aa_ref]][dict_matrix[aa_mut]]
+
+                if type(score) == numpy.int64:
+                    score = int(score)
+                connection.execute(
+                    "INSERT INTO snp_phat VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                    (
+                        acc,
+                        id,
+                        gene,
+                        var,
+                        rs,
+                        aa_ref,
+                        aa_mut,
+                        snp_pos,
+                        patho,
+                        gno_freq,
+                        score,
+                    ),
+                )
+
+    ###############################################################################
 
 print("\nPart II: Extracting frequencies from the PFAM alignment and computing entropy")
 
 no_pfam = set()
 # Entropy
 
-mycursor.execute("DROP TABLE IF EXISTS snp_eval")
-mycursor.execute(
+connection.execute("DROP TABLE IF EXISTS snp_eval")
+connection.execute(
     """CREATE TABLE snp_eval (acc varchar(20), id varchar(30),
     pfam varchar(20), snp_id varchar(30), snp_rs varchar(30),
     aa_ref varchar(30), aa_mut varchar(30), snp_pos int, gnomad_freq float(20,10), subs_mat int,
@@ -281,231 +274,183 @@ mycursor.execute(
 
 ## entropia inicial a parti de les regions transmem del arxiu total d'uniprot
 
-data_taula_protines_entropia = extract_data_taula_proteines_entropia(data_llista)
-data_locations_taula_snip_regions_entropia = crear_llista_prot_seqamino_entropia(
-    data_taula_protines_entropia
-)
+data_prot_entro = ext_prot_entro(l_data)
+data_snp_reg_entro = create_l_prot_entro(data_prot_entro)
 
-data_locations_taula_snip_regions = extract_data_taula_snip_regions_entropia(
-    data_llista
-)
-llista_snps_transmembrana_taula_snip_regions = descart_regio_no_transmembrana_entropia(
-    data_locations_taula_snip_regions
-)
+data_snp_reg = snp_reg_entro(l_data)
+l_snp_tm_reg = rm_no_stm_entro(data_snp_reg)
 
-string_adn_total = ""
-for num_posicio_llista in range(len(llista_snps_transmembrana_taula_snip_regions)):
-    for numero_regions in range(
-        len(llista_snps_transmembrana_taula_snip_regions[num_posicio_llista][1])
-    ):
-        accesion_protein = llista_snps_transmembrana_taula_snip_regions[
-            num_posicio_llista
-        ][0]
-        region_protein_inici = int(
-            llista_snps_transmembrana_taula_snip_regions[num_posicio_llista][1][
-                numero_regions
-            ][:8]
-        )
-        region_protein_final = int(
-            llista_snps_transmembrana_taula_snip_regions[num_posicio_llista][1][
-                numero_regions
-            ][9:]
-        )
-        for num_posicio_llista_adn in range(
-            len(data_locations_taula_snip_regions_entropia)
-        ):
-            if (
-                data_locations_taula_snip_regions_entropia[num_posicio_llista_adn][0]
-                == accesion_protein
-            ):
-                string_adn_total += data_locations_taula_snip_regions_entropia[
-                    num_posicio_llista_adn
-                ][1][region_protein_inici - 1 : region_protein_final]
+adn_all = ""
+for l_n_pos in range(len(l_snp_tm_reg)):
+    for n_reg in range(len(l_snp_tm_reg[l_n_pos][1])):
+        acc_prot = l_snp_tm_reg[l_n_pos][0]
+        reg_ini = int(l_snp_tm_reg[l_n_pos][1][n_reg][:8])
+        reg_end = int(l_snp_tm_reg[l_n_pos][1][n_reg][9:])
+        for l_pos_adn in range(len(data_snp_reg_entro)):
+            if data_snp_reg_entro[l_pos_adn][0] == acc_prot:
+                adn_all += data_snp_reg_entro[l_pos_adn][1][reg_ini - 1 : reg_end]
 
-diccionario_freq_abs = dict(
-    collections.Counter(string_adn_total)
+d_freq_abs = dict(
+    collections.Counter(adn_all)
 )  # amb els 2 aminoacids sense res mes ni x ni Z ni B
 
-diccionario_freq_relatives = dict()
-total_aminoacids = 0
-for aminoacid in diccionario_freq_abs:
-    total_aminoacids += diccionario_freq_abs[aminoacid]
+d_freq_rel = dict()
+all_aa = 0
+for aa in d_freq_abs:
+    all_aa += d_freq_abs[aa]
 
-for aminoacid in diccionario_freq_abs:
-    diccionario_freq_relatives[aminoacid] = (
-        diccionario_freq_abs[aminoacid] / total_aminoacids
-    )
+for aa in d_freq_abs:
+    d_freq_rel[aa] = d_freq_abs[aa] / all_aa
 
 suma = 0.0
-for aminoacid_dict in diccionario_freq_relatives:
-    suma += diccionario_freq_relatives[aminoacid_dict] * log(
-        diccionario_freq_relatives[aminoacid_dict]
-    )
+for d_aa in d_freq_rel:
+    suma += d_freq_rel[d_aa] * log(d_freq_rel[d_aa])
 
-entropia_inicial = -suma
-# print(entropia_inicial)
-
+entro_ini = abs(suma)
 ## calcul de la frequencia i entropia de la posicio on cau l'snip###############
-mycursor.execute("select distinct acc from snps;")
-total_acc_tupple = mycursor.fetchall()
-total_acc_list = list()
-for tupple in total_acc_tupple:
-    for tot in tupple:
-        total_acc_list.append(tot)
-# print(total_acc_list)
+data = pd.read_sql("select distinct acc from snps;", engine)
+total_acc_list = data.acc
+total_acc_list = list(total_acc_list)
 
-mycursor.execute("select distinct acc from snp_phat;")
-distinct_acc_tupple = mycursor.fetchall()
-distinct_acc_list = list()
-for tupple in distinct_acc_tupple:
-    for acc in tupple:
-        distinct_acc_list.append(acc)
-# print(distinct_acc_list)
+data = pd.read_sql("select distinct acc from snp_phat;", engine)
+l_acc = data.acc
+l_acc = list(l_acc)
 
-for i, accses in enumerate(distinct_acc_list):
-    print(f"Processing {accses} ({i+1} / {total_acc})")
-    mycursor.execute(
-        "select distinct pfam from receptor_pfam where acc = '" + accses + "';"
+for i, accs in enumerate(l_acc):
+    print(f"Processing {accs} ({i+1} / {total_acc})")
+    data = pd.read_sql(
+        "select tm_start, tm_final from tm_segments where acc = '" + accs + "';", engine
     )
-    distinct_pfam_tupple = mycursor.fetchall()
-    distinct_pfam_list = list()
-    for tupple in distinct_pfam_tupple:
-        for pfam in tupple:
-            distinct_pfam_list.append(pfam)
-    mycursor.execute("select distinct id from snp_phat where acc = '" + accses + "';")
-    distinct_id_tupple = mycursor.fetchall()
-    for tupple in distinct_id_tupple:
-        for id in tupple:
-            distinct_id = id
-    # print(accses)
-    sql_str = "select distinct snp_id from snp_phat where acc = '" + accses + "';"
-    # print(sql_str)
-    mycursor.execute(sql_str)
-    distinct_var_tupple = mycursor.fetchall()
-    distinct_var_list = list()
-    for tupple in distinct_var_tupple:
-        for var in tupple:
-            distinct_var_list.append(var)
-    for snip_var in distinct_var_list:
-        mycursor.execute(
-            "select snp_rs from snp_phat where snp_id = '" + snip_var + "';"
-        )
-        distinct_snip_rs_tupple = mycursor.fetchall()
-        for tupple in distinct_snip_rs_tupple:
-            for snip_rs in tupple:
-                distinct_snip_rs = snip_rs
-        mycursor.execute(
-            "select snp_pos from snp_phat where snp_id = '" + snip_var + "';"
-        )
-        distinct_snip_tupple = mycursor.fetchall()
-        for tupple in distinct_snip_tupple:
-            for snip in tupple:
-                distinct_snip = snip
-        mycursor.execute(
-            "select aa_mut from snp_phat where snp_id = '" + snip_var + "';"
-        )
-        distinct_aa_tupple = mycursor.fetchall()
-        for tupple in distinct_aa_tupple:
-            for aa in tupple:
-                distinct_aa = aa
-        mycursor.execute(
-            "select aa_ref from snp_phat where snp_id = '" + snip_var + "';"
-        )
-        distinct_aa_i_tupple = mycursor.fetchall()
-        for tupple in distinct_aa_i_tupple:
-            for aa_i in tupple:
-                distinct_aa_i = aa_i
+    reg_start = data.tm_start
+    reg_start = list(reg_start)
+    reg_end = data.tm_final
+    reg_end = list(reg_end)
 
-        mycursor.execute(
-            "select pathogenic from snp_phat where snp_id = '" + snip_var + "';"
+    data = pd.read_sql(
+        "select distinct pfam from receptor_pfam where acc = '" + accs + "';", engine
+    )
+    l_pfam = data.pfam
+    l_pfam = list(l_pfam)
+    data = pd.read_sql(
+        "select distinct id from snp_phat where acc = '" + accs + "';", engine
+    )
+    id = data.id
+    id = list(id)
+    id = id[0]
+
+    data = pd.read_sql(
+        "select distinct snp_id from snp_phat where acc = '" + accs + "';", engine
+    )
+    l_var = data.snp_id
+    l_var = list(l_var)
+
+    for snp_var in l_var:
+        data = pd.read_sql(
+            "select snp_rs from snp_phat where snp_id = '" + snp_var + "';", engine
         )
-        distinct_path_tupple = mycursor.fetchall()
-        for tupple in distinct_path_tupple:
-            for path in tupple:
-                distinct_path = path
+        snp_rs = data.snp_rs
+        snp_rs = list(snp_rs)
+        snp_rs = snp_rs[0]
 
-        mycursor.execute(
-            "select gnomad_freq from snp_phat where snp_id = '" + snip_var + "';"
+        data = pd.read_sql(
+            "select snp_pos from snp_phat where snp_id = '" + snp_var + "';", engine
         )
-        distinct_gnomadfreq_tupple = mycursor.fetchall()
-        for tupple in distinct_gnomadfreq_tupple:
-            for gnomad_freq in tupple:
-                distinct_gnomadfreq = gnomad_freq
+        snp_pos = data.snp_pos
+        snp_pos = list(snp_pos)
+        snp_pos = snp_pos[0]
 
-        mycursor.execute(
-            "select subs_mat from snp_phat where snp_id = '" + snip_var + "';"
-        )
-        distinct_path_tupple = mycursor.fetchall()
-        for tupple in distinct_path_tupple:
-            for subs_mat in tupple:
-                distinct_subs_mat = subs_mat
-
-        for pfam_ac in distinct_pfam_list:
-            try:
-                data_llista = file_to_lines(pfam_download_path + pfam_ac)
-            except FileNotFoundError:
-                print(f"No {pfam_download_path}{pfam_ac}")
-                no_pfam.add(pfam_ac)
-            llista_prot_posicions_amino = crear_llista_llistes_proteines(data_llista)
-            llista_prot_posicio_total = crear_llista_idprotein_rs_amino_posiciototal(
-                llista_prot_posicions_amino,
-                distinct_id,
-                distinct_var_list,
-                distinct_snip,
-            )
-            llista_prot_rs_amino_distinctprot = crear_llista_prot_rs_amino_distinctprot(
-                llista_prot_posicio_total, llista_prot_posicions_amino
-            )
-            freq_entropia = calcul_freq_entropia(
-                llista_prot_rs_amino_distinctprot, entropia_inicial, distinct_aa
-            )
-
-            if distinct_aa == "MISS":
-                freq_entropia = None
-            if freq_entropia == None:
-                freq_ref = None
-                freq_mut = None
-                entropia = None
+        # Saber si es TM o no
+        tm_okey = False
+        for i, pos in enumerate(reg_start):
+            if snp_pos >= pos and snp_pos <= reg_end[i]:
+                tm_okey = True
             else:
-                freq_ref = float(freq_entropia[0])
-                freq_mut = float(freq_entropia[1])
-                entropia = float(freq_entropia[2])
+                continue
 
-            #                sql_str = f"""INSERT INTO snp_eval VALUES ('{accses}', '{distinct_id}',
-            #                            '{pfam_ac}', '{snip_var}', '{distinct_snip_rs}',
-            #                            '{distinct_aa_i}', '{distinct_aa}', {distinct_snip},
-            #                           {distinct_subs_mat}, {freq_ref}, {freq_mut}, {entropia}, {distinct_path});"""
-            # print(sql_str)
-            #            mycursor.execute(sql_str)
+        data = pd.read_sql(
+            "select aa_mut from snp_phat where snp_id = '" + snp_var + "';", engine
+        )
+        aa_mut = data.aa_mut
+        aa_mut = list(aa_mut)
+        aa_mut = aa_mut[0]
 
-            mycursor.execute(
-                "INSERT INTO snp_eval VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                (
-                    accses,
-                    distinct_id,
-                    pfam_ac,
-                    snip_var,
-                    distinct_snip_rs,
-                    distinct_aa_i,
-                    distinct_aa,
-                    distinct_snip,
-                    distinct_gnomadfreq,
-                    distinct_subs_mat,
-                    freq_ref,
-                    freq_mut,
-                    entropia,
-                    distinct_path,
-                ),
-            )
-            conn.commit()
+        data = pd.read_sql(
+            "select aa_ref from snp_phat where snp_id = '" + snp_var + "';", engine
+        )
+        aa_ref = data.aa_ref
+        aa_ref = list(aa_ref)
+        aa_ref = aa_ref[0]
+
+        data = pd.read_sql(
+            "select pathogenic from snp_phat where snp_id = '" + snp_var + "';", engine
+        )
+        patho = data.pathogenic
+        patho = list(patho)
+        patho = patho[0]
+
+        data = pd.read_sql(
+            "select gnomad_freq from snp_phat where snp_id = '" + snp_var + "';", engine
+        )
+        gno_freq = data.gnomad_freq
+        gno_freq = list(gno_freq)
+        gno_freq = gno_freq[0]
+
+        data = pd.read_sql(
+            "select subs_mat from snp_phat where snp_id = '" + snp_var + "';", engine
+        )
+        subs_mat = data.subs_mat
+        subs_mat = list(subs_mat)
+        subs_mat = subs_mat[0]
+
+        if tm_okey == True:
+            for pfam_ac in l_pfam:
+                try:
+                    l_data = file_to_lines(path_pfam + pfam_ac)
+                except FileNotFoundError:
+                    print(f"No {path_pfam}{pfam_ac}")
+                    no_pfam.add(pfam_ac)
+                l_prot_pos_aa = create_l_prot(l_data)
+                l_prot_pos_total = create_l_variables(l_prot_pos_aa, id, l_var, snp_pos)
+                l_prot_rs = create_l_rs(l_prot_pos_total, l_prot_pos_aa)
+                freq_entro = cal_freq_entro(l_prot_rs, entro_ini, aa_mut)
+                if aa_mut == "MISS":
+                    freq_entro = None
+                if freq_entro == None:
+                    freq_ref = None
+                    freq_mut = None
+                    entropia = None
+                else:
+                    freq_ref = float(freq_entro[0])
+                    freq_mut = float(freq_entro[1])
+                    entropia = float(freq_entro[2])
+                if freq_ref != None and freq_mut != None and entropia != None:
+                    connection.execute(
+                        "INSERT INTO snp_eval VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                        (
+                            accs,
+                            id,
+                            pfam_ac,
+                            snp_var,
+                            snp_rs,
+                            aa_ref,
+                            aa_mut,
+                            snp_pos,
+                            gno_freq,
+                            subs_mat,
+                            freq_ref,
+                            freq_mut,
+                            entropia,
+                            patho,
+                        ),
+                    )
 
 
 # Delete non-TM
-mycursor.execute("drop table snp_phat;")
-conn.commit()
+# connection.execute("drop table snp_phat;")
 
 print("Proteins with no PFAM alignment:")
 for el in no_pfam:
     print(el, end=" ")
 
 print("... Done!")
+connection.close()

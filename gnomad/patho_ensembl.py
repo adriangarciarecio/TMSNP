@@ -4,7 +4,7 @@
 
 # Read csv (from SQL) and extracts pathological snps
 
-import sqlalchemy
+import sqlalchemy as sql
 import os
 import pandas as pd
 
@@ -13,9 +13,11 @@ list1 = open("ensembl_list.txt")  # input
 list3 = open("list2.txt", "w")
 
 
-engine = sqlalchemy.create_engine(
-    f'mysql+mysqlconnector://lmcdb:{os.getenv("LMCDB_PASS")}@alf03.uab.cat/tmsnp'
-)
+# Set the connection
+# engine = sql.create_engine(
+#     f"mysql://lmcdb:{os.getenv('LMCDB_PASS')}@alf03.uab.cat/tmsnp"
+# )
+engine = sql.create_engine(f"mysql://adrian:compmod5@localhost/tmsnp")
 
 snps = pd.read_sql("SELECT * FROM snps", engine)
 proteins = snps["acc"].unique()

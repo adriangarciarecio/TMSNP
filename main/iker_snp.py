@@ -18,245 +18,235 @@ def file_to_lines(filename):
 
 
 def zerolistmaker(n):
-    listofzeros = [0] * n
-    return listofzeros
+    l_0 = [0] * n
+    return l_0
 
 
-def extract_data_taula_proteines(data_llista):
+def extract_prot(l_data):
     """
-    :param data_llista: llista de cada linia del arxiu text de Uniprot
-    :return: una llista de llistes amb: [ID uniprot, AC el codi uniprot, GN nom gen, [PFAM]
+    :param l_data: llista de cada linia del arxiu text de Uniprot
+    :return: una llista de llistes amb: [ID uniprot, AC el code uniprot, GN nom gen, [PFAM]
     """
     pfam_loc = list()
-    general_id = ""
+    id = ""
     loc = ""
-    codi = ""
+    code = ""
     gen = ""
-    llista1 = list()
-    llista_de_llistes = list()
-    for data_string in data_llista:
-        if data_string[0:2] == "ID" and general_id == "":
-            ID_list = data_string.split("   ")
-            general_id = ID_list[1]
-        elif data_string[0:2] == "AC" and codi == "":
-            AC_list = data_string.split(";")
-            codi = AC_list[0][5:]
-        elif data_string[0:2] == "GN" and gen == "":
-            GN_list = data_string.split("=")
-            gen = GN_list[1][: GN_list[1].find(" ")].strip(";")
-        elif data_string[0:2] == "DR":
-            PFAM_list = data_string.split(" ")
-            if PFAM_list[3] == "Pfam;":
-                pfam_loc.append(PFAM_list[4][:-1])
-        elif data_string[0:2] == "FT":
-            FT_list = data_string.split(" ")
-            for n in FT_list:
+    l1 = list()
+    l_of_l = list()
+    for data_str in l_data:
+        if data_str[0:2] == "ID" and id == "":
+            l_id = data_str.split("   ")
+            id = l_id[1]
+        elif data_str[0:2] == "AC" and code == "":
+            l_ac = data_str.split(";")
+            code = l_ac[0][5:]
+        elif data_str[0:2] == "GN" and gen == "":
+            l_gn = data_str.split("=")
+            gen = l_gn[1][: l_gn[1].find(" ")].strip(";")
+        elif data_str[0:2] == "DR":
+            l_pfam = data_str.split(" ")
+            if l_pfam[3] == "Pfam;":
+                pfam_loc.append(l_pfam[4][:-1])
+        elif data_str[0:2] == "FT":
+            l_ft = data_str.split(" ")
+            for n in l_ft:
                 if n == "TRANSMEM":
                     loc = "transm_loc"
-        elif data_string[0:2] == "//" and loc == "transm_loc":
-            llista1.append(general_id)
-            llista1.append(codi)
-            llista1.append(gen)
-            llista1.append(pfam_loc)
-            llista_de_llistes.append(llista1)
+        elif data_str[0:2] == "//" and loc == "transm_loc":
+            l1.append(id)
+            l1.append(code)
+            l1.append(gen)
+            l1.append(pfam_loc)
+            l_of_l.append(l1)
             pfam_loc = []
-            llista1 = []
-            general_id = ""
-            codi = ""
+            l1 = []
+            id = ""
+            code = ""
             gen = ""
             loc = ""
-        elif data_string[0:2] == "//" and loc == "":
+        elif data_str[0:2] == "//" and loc == "":
             pfam_loc = []
-            llista1 = []
-            general_id = ""
-            codi = ""
+            l1 = []
+            id = ""
+            code = ""
             gen = ""
         else:
             continue
-    return llista_de_llistes
+    return l_of_l
 
 
-def extract_data_taula_snip_regions(data_llista):
+def extract_snp_regions(l_data):
     """
-    :param data_llista: llista de cada linia del arxiu text de Uniprot
-    :return: una llista de llistes amb: [Accesion de el codi uniprot, [ llista de posicions transmembrana], [llista de SNPs RS]], [llista snips VAR]] i descarta les proteines sense regio transmembrana
+    :param l_data: llista de cada linia del arxiu text de Uniprot
+    :return: una llista de llistes amb: [Accesion de el code uniprot, [ llista de posns transmembrana], [llista de SNPs RS]], [llista snp VAR]] i descarta les proteines sense regio transmembrana
     """
-    general_id = ""
+    id = ""
     gen = ""
     id_var_loc = ""
     disease_match = ""
     loc = ""
-    codi = ""
+    code = ""
     disease = list()
     sub_loc = list()
-    variant_loc = list()
-    variant_change = list()
-    variant_id = list()
-    variant_rs = list()
-    llista1 = list()
-    llista_de_llistes = list()
-    for data_string in data_llista:
-        if data_string[0:2] == "ID" and general_id == "":
-            ID_list = data_string.split("   ")
-            general_id = ID_list[1]
-        elif data_string[0:2] == "GN" and gen == "":
-            GN_list = data_string.split("=")
-            gen = GN_list[1][: GN_list[1].find(" ")].strip(";")
-        elif data_string[0:2] == "AC" and codi == "":
-            AC_list = data_string.split(";")
-            codi = AC_list[0][5:]
-        elif data_string[0:17] == "CC   -!- DISEASE:":
+    var_loc = list()
+    var_change = list()
+    var_id = list()
+    var_rs = list()
+    l1 = list()
+    l_of_l = list()
+    for data_str in l_data:
+        if data_str[0:2] == "ID" and id == "":
+            l_id = data_str.split("   ")
+            id = l_id[1]
+        elif data_str[0:2] == "GN" and gen == "":
+            l_gn = data_str.split("=")
+            gen = l_gn[1][: l_gn[1].find(" ")].strip(";")
+        elif data_str[0:2] == "AC" and code == "":
+            l_ac = data_str.split(";")
+            code = l_ac[0][5:]
+        elif data_str[0:17] == "CC   -!- DISEASE:":
             disease_match = "trobat"
-            if data_string.find("(") == -1:
+            if data_str.find("(") == -1:
                 disease_match = "trobat_dolent"
             else:
-                disease.append(
-                    data_string[data_string.find("(") + 1 : data_string.find(")")]
-                )
-        elif data_string[0:9] == "CC       " and disease_match == "trobat_dolent":
-            if data_string.find("(") != -1:
+                disease.append(data_str[data_str.find("(") + 1 : data_str.find(")")])
+        elif data_str[0:9] == "CC       " and disease_match == "trobat_dolent":
+            if data_str.find("(") != -1:
                 disease_match = "trobat"
-                disease.append(
-                    data_string[data_string.find("(") + 1 : data_string.find(")")]
-                )
+                disease.append(data_str[data_str.find("(") + 1 : data_str.find(")")])
             else:
                 disease_match = "trobat_dolent"
-        elif data_string[0:2] == "FT":
-            if data_string[5:13] == "TRANSMEM":
+        elif data_str[0:2] == "FT":
+            if data_str[5:13] == "TRANSMEM":
                 loc = "transm_loc"
-                sub_loc.append(data_string[13:27])
-            elif data_string[5:12] == "VARIANT":
-                variant_rs.append("-")
+                sub_loc.append(data_str[13:27])
+            elif data_str[5:12] == "VARIANT":
+                var_rs.append("-")
                 id_var_loc = "trobat"
-                variant_loc.append(data_string[20:-2])
-            if id_var_loc == "trobat" and data_string.find("->") != -1:
-                variant_change.append(
-                    data_string[
-                        data_string.find("->") - 3 : data_string.find("->") + 5
-                    ].strip(" \n .")
+                var_loc.append(data_str[20:-2])
+            if id_var_loc == "trobat" and data_str.find("->") != -1:
+                var_change.append(
+                    data_str[data_str.find("->") - 3 : data_str.find("->") + 5].strip(
+                        " \n ."
+                    )
                 )
-            if id_var_loc == "trobat" and data_string.find("Missing") != -1:
-                variant_change.append("MISS -> MISS")
-            if id_var_loc == "trobat" and data_string.find("/FTId=") != -1:
-                variant_id.append(data_string[40:50])
+            if id_var_loc == "trobat" and data_str.find("Missing") != -1:
+                var_change.append("MISS -> MISS")
+            if id_var_loc == "trobat" and data_str.find("/FTId=") != -1:
+                var_id.append(data_str[40:50])
                 id_var_loc = ""
-            if id_var_loc == "trobat" and data_string.find("dbSNP:rs") != -1:
-                variant_rs.pop(len(variant_rs) - 1)
-                variant_rs.append(
-                    data_string[
-                        data_string.find("dbSNP:rs")
-                        + 6 : data_string.find("dbSNP:rs")
-                        + 17
+            if id_var_loc == "trobat" and data_str.find("dbSNP:rs") != -1:
+                var_rs.pop(len(var_rs) - 1)
+                var_rs.append(
+                    data_str[
+                        data_str.find("dbSNP:rs") + 6 : data_str.find("dbSNP:rs") + 17
                     ].rstrip(").\n")
                 )
-        elif data_string[0:2] == "//" and loc == "transm_loc":
-            llista1.append(codi)
-            llista1.append(sub_loc)
-            llista1.append(variant_loc)
-            llista1.append(variant_change)
-            llista1.append(variant_id)
-            llista1.append(variant_rs)
-            llista1.append(disease)
-            llista1.append(general_id)
-            llista1.append(gen)
-            llista_de_llistes.append(llista1)
+        elif data_str[0:2] == "//" and loc == "transm_loc":
+            l1.append(code)
+            l1.append(sub_loc)
+            l1.append(var_loc)
+            l1.append(var_change)
+            l1.append(var_id)
+            l1.append(var_rs)
+            l1.append(disease)
+            l1.append(id)
+            l1.append(gen)
+            l_of_l.append(l1)
             sub_loc = []
-            variant_loc = []
-            variant_id = []
-            variant_rs = []
-            llista1 = []
-            variant_change = []
+            var_loc = []
+            var_id = []
+            var_rs = []
+            l1 = []
+            var_change = []
             disease = []
-            codi = ""
+            code = ""
             loc = ""
-            general_id = ""
+            id = ""
             gen = ""
-        elif data_string[0:2] == "//" and loc == "":
+        elif data_str[0:2] == "//" and loc == "":
             sub_loc = []
-            variant_loc = []
-            variant_id = []
-            variant_rs = []
-            llista1 = []
-            variant_change = []
+            var_loc = []
+            var_id = []
+            var_rs = []
+            l1 = []
+            var_change = []
             disease = []
-            codi = ""
-            general_id = ""
+            code = ""
+            id = ""
             gen = ""
         else:
             continue
-    return llista_de_llistes
+    return l_of_l
 
 
-def descart_regio_no_transmembrana(data_locations_net):
+def descart_no_transm(data_loc):
     """
-    :param data_locations:  una llista de llistes amb: [Accesion de el codi uniprot, [ llista de posicions transmembrana], [llista de SNPs RS]], [llista snips VAR]]
-    :return: una llista de llistes amb: [Accesion de el codi uniprot, [ llista de posicions transmembrana], [llista de SNPs RS]], [llista snips VAR], [llista posicio snips transmembraana]]
+    :param data_locations:  una llista de llistes amb: [Accesion de el code uniprot, [ llista de posns transmembrana], [llista de SNPs RS]], [llista snp VAR]]
+    :return: una llista de llistes amb: [Accesion de el code uniprot, [ llista de posns transmembrana], [llista de SNPs RS]], [llista snp VAR], [llista pos snp transmembraana]]
     """
-    llist = list()
-    final_list = list()
-    snips_sols = list()
-    for num_proteina in range(0, len(data_locations_net)):
-        nom_uniprot = data_locations_net[num_proteina][0]
-        posicions_transmem = data_locations_net[num_proteina][1]
-        snp_rs = data_locations_net[num_proteina][2]
-        canvi_mutacio = data_locations_net[num_proteina][3]
-        snp_var = data_locations_net[num_proteina][4]
-        snp_rs_sol = data_locations_net[num_proteina][5]
-        disease = data_locations_net[num_proteina][6]
-        id = data_locations_net[num_proteina][7]
-        gen = data_locations_net[num_proteina][8]
+    l_f, l_snps = [], []
+    for n_prot in range(0, len(data_loc)):
+        uniprot = data_loc[n_prot][0]
+        pos_tm = data_loc[n_prot][1]
+        snp_rs = data_loc[n_prot][2]
+        mut = data_loc[n_prot][3]
+        snp_var = data_loc[n_prot][4]
+        snp_rs = data_loc[n_prot][5]
+        disease = data_loc[n_prot][6]
+        id = data_loc[n_prot][7]
+        gen = data_loc[n_prot][8]
         if len(snp_rs) != len(snp_var):
-            print("hi ha un problema amb els snps, no tots tenen codi VAR_... ")
-            print("la proteina es: " + id)
+            print("Problem with SNPs, some don't have code VAR_...")
+            print("PROTEIN: " + id)
             sys.exit()
-        if len(snp_var) != len(snp_rs_sol):
-            print(
-                "hi ha un problema amb els snps, no es crean be els codis rs dels snips... "
-            )
+        if len(snp_var) != len(snp_rs):
+            print("Problem with SNPs, the rs codes don't genereted well...")
             sys.exit()
-        if len(snp_rs_sol) != len(canvi_mutacio):
-            print(snp_rs_sol)
-            print(canvi_mutacio)
+        if len(snp_rs) != len(mut):
+            print(snp_rs)
+            print(mut)
             print(
                 "hi ha un problema amb els canvis de la mutacio (aminoacid) no tots apareix el canvi....... "
             )
             sys.exit()
-        llista_snp_transmem = zerolistmaker(len(snp_rs))
-        llista_snp_disease = zerolistmaker(len(snp_rs))
-        for snips in snp_rs:
-            snips_sols.append(snips[:7].strip())
+        l_snp_tm = zerolistmaker(len(snp_rs))
+        l_snp_dis = zerolistmaker(len(snp_rs))
+        for snp in snp_rs:
+            l_snps.append(snp[:7].strip())
             for a_disease in disease:
-                if snips.find(a_disease) != -1:
-                    llista_snp_disease.pop(snp_rs.index(snips))
-                    llista_snp_disease.insert(snp_rs.index(snips), 1)
-        for coordenades in posicions_transmem:
-            primera_coordenada_transmembrana = coordenades[:7].strip()
-            segona_coordenada_transmembrana = coordenades[7:].strip()
-            for snips in snp_rs:
-                posicio_snp = snips[:7].strip()
-                if int(posicio_snp) >= int(primera_coordenada_transmembrana) and int(
-                    posicio_snp
-                ) <= int(segona_coordenada_transmembrana):
-                    llista_snp_transmem.pop(len(llista_snp_transmem) - 1)
-                    llista_snp_transmem.insert(snp_rs.index(snips), 1)
-        if len(snp_var) != len(llista_snp_disease):
-            print("no tenen mateixa llargada la llista 0")
-        if len(llista_snp_disease) != len(llista_snp_transmem):
-            print("no tenen mateixa llargada la llista 0")
-        llist.append(nom_uniprot)
-        llist.append(posicions_transmem)
-        llist.append(snp_var)
-        llist.append(canvi_mutacio)
-        llist.append(snp_rs_sol)
-        llist.append(snips_sols)
-        llist.append(llista_snp_transmem)
-        llist.append(llista_snp_disease)
-        llist.append(id)
-        llist.append(gen)
-        final_list.append(llist)
-        llist = []
-        snips_sols = []
-    return final_list
+                if snp.find(a_disease) != -1:
+                    l_snp_dis.pop(snp_rs.index(snp))
+                    l_snp_dis.insert(snp_rs.index(snp), 1)
+        for coords in pos_tm:
+            x_coord_tm = coords[:7].strip()
+            y_coord_tm = coords[7:].strip()
+            for snp in snp_rs:
+                pos_snp = snp[:7].strip()
+                if int(pos_snp) >= int(x_coord_tm) and int(pos_snp) <= int(y_coord_tm):
+                    l_snp_tm.pop(len(l_snp_tm) - 1)
+                    l_snp_tm.insert(snp_rs.index(snp), 1)
+        if len(snp_var) != len(l_snp_dis):
+            print("Different lenght")
+        if len(l_snp_dis) != len(l_snp_tm):
+            print("Different lenght")
+        l_f.append(
+            [
+                uniprot,
+                pos_tm,
+                snp_var,
+                mut,
+                snp_rs,
+                l_snps,
+                l_snp_tm,
+                l_snp_dis,
+                id,
+                gen,
+            ]
+        )
+        l_snps = []
+    return l_f
 
 
 def run_curl(url, file_out):
@@ -267,88 +257,79 @@ def run_curl(url, file_out):
         fileout.write(out)
 
 
-def crear_llista_llistes_proteines(data_llista):
-    llista1 = list()
-    llista_prot_amino = list()
-    for proteina in data_llista:
-        llista_proteina = proteina.split(" ")
-        if llista_proteina[0].find("/") != -1:
-            pos_barra = llista_proteina[0].find("/")
+def create_l_prot(l_data):
+    l1, l_prot_aa = [], []
+    for prot in l_data:
+        l_prot = prot.split(" ")
+        if l_prot[0].find("/") != -1:
+            pos_barra = l_prot[0].find("/")
         else:
             print(
-                "hi ha un error en el codi de la proteina no es trova la separacio entre el nom i la posicio (/)"
+                "Error in code of the protein. Don't found the space between name and position(/)"
             )
-            print("lerror esta en la proteina: " + proteina)
+            print("Error in: " + prot)
             break
-        llista1.append(llista_proteina[0][:pos_barra])
-        llista1.append(llista_proteina[0][pos_barra + 1 :])
-        for posicio in llista_proteina:
-            if posicio.find(llista_proteina[0]) == -1 and posicio != "":
-                llista1.append(posicio.rstrip("\n"))
-        llista_prot_amino.append(llista1)
-        llista1 = []
-    return llista_prot_amino
+        l1.append(l_prot[0][:pos_barra])
+        l1.append(l_prot[0][pos_barra + 1 :])
+        for pos in l_prot:
+            if pos.find(l_prot[0]) == -1 and pos != "":
+                l1.append(pos.rstrip("\n"))
+        l_prot_aa.append(l1)
+        l1 = []
+    return l_prot_aa
 
 
-def crear_llista_idprotein_rs_amino_posiciototal(
-    llista_prot_posicions_amino, id_protein, snip_var, snip_position
-):
-    llista_prot_posicio_total = list()
-    llista1 = list()
-    for num_proteina in range(0, len(llista_prot_posicions_amino)):
-        nom_proteina = llista_prot_posicions_amino[num_proteina][0]
-        coord_aminoacids = llista_prot_posicions_amino[num_proteina][1]
-        aminoacids = llista_prot_posicions_amino[num_proteina][2]
+def create_l_variables(l_prot_pos_aa, id_prot, snp_var, snp_pos):
+    l_prot_pos_total = list()
+    l1 = list()
+    for n_prot in range(0, len(l_prot_pos_aa)):
+        name_prot = l_prot_pos_aa[n_prot][0]
+        coord_aa = l_prot_pos_aa[n_prot][1]
+        aminoacids = l_prot_pos_aa[n_prot][2]
         if (
-            nom_proteina == id_protein
-            and snip_position >= int(coord_aminoacids[: coord_aminoacids.find("-")])
-            and snip_position <= int(coord_aminoacids[coord_aminoacids.find("-") + 1 :])
+            name_prot == id_prot
+            and snp_pos >= int(coord_aa[: coord_aa.find("-")])
+            and snp_pos <= int(coord_aa[coord_aa.find("-") + 1 :])
         ):
-            counter_1 = int(coord_aminoacids[: coord_aminoacids.find("-")])
-            counter_2 = 0
-            llista1.append(nom_proteina)
-            llista1.append(snip_var)
+            c_1 = int(coord_aa[: coord_aa.find("-")])
+            c_2 = 0
+            l1.append(name_prot)
+            l1.append(snp_var)
             for caracter in aminoacids:
-                if caracter != "-" and counter_1 <= snip_position:
-                    counter_1 = counter_1 + 1
+                if caracter != "-" and c_1 <= snp_pos:
+                    c_1 = c_1 + 1
                     caracter_final = caracter
-                if counter_1 <= snip_position:
-                    counter_2 = counter_2 + 1
-            llista1.append(caracter_final)
-            llista1.append(counter_2)
-            llista_prot_posicio_total.append(llista1)
-            llista1 = []
-    return llista_prot_posicio_total
+                if c_1 <= snp_pos:
+                    c_2 = c_2 + 1
+            l1.append(caracter_final)
+            l1.append(c_2)
+            l_prot_pos_total.append(l1)
+            l1 = []
+    return l_prot_pos_total
 
 
-def crear_llista_prot_rs_amino_distinctprot(
-    llista_prot_posicio_total, llista_prot_posicions_amino
-):
-    llista_distinct_prot = list()
-    llista1 = list()
-    llista_prot_rs_amino_distinctprot = list()
-    for numero_proteina in range(0, len(llista_prot_posicio_total)):
-        nom_proteina = llista_prot_posicio_total[numero_proteina][0]
-        snip_rs = llista_prot_posicio_total[numero_proteina][1]
-        amino = llista_prot_posicio_total[numero_proteina][2]
-        posicio = llista_prot_posicio_total[numero_proteina][3]
-        llista1.append(nom_proteina)
-        llista1.append(snip_rs)
-        llista1.append(amino)
-        for num_proteina in range(0, len(llista_prot_posicions_amino)):
-            aminoacids = llista_prot_posicions_amino[num_proteina][2]
-            llista_distinct_prot.append(aminoacids[posicio])
-        llista1.append(llista_distinct_prot)
-        llista_prot_rs_amino_distinctprot.append(llista1)
-        llista_distinct_prot = []
-        llista1 = []
-    return llista_prot_rs_amino_distinctprot
+def create_l_rs(l_prot_pos_total, l_prot_pos_aa):
+    l_prot, l1, l_rs = [], [], []
+    for numero_prot in range(0, len(l_prot_pos_total)):
+        name_prot = l_prot_pos_total[numero_prot][0]
+        snip_rs = l_prot_pos_total[numero_prot][1]
+        amino = l_prot_pos_total[numero_prot][2]
+        pos = l_prot_pos_total[numero_prot][3]
+        l1.append(name_prot)
+        l1.append(snip_rs)
+        l1.append(amino)
+        for n_prot in range(0, len(l_prot_pos_aa)):
+            aminoacids = l_prot_pos_aa[n_prot][2]
+            l_prot.append(aminoacids[pos])
+        l1.append(l_prot)
+        l_rs.append(l1)
+        l_prot = []
+        l1 = []
+    return l_rs
 
 
-def calcul_freq_entropia(
-    llista_prot_rs_amino_distinctprot, entropia_inicial, distinct_aa
-):
-    aminos_llista = [
+def cal_freq_entro(l_rs, entro_ini, aa):
+    l_aa = [
         "Y",
         "G",
         "F",
@@ -373,229 +354,175 @@ def calcul_freq_entropia(
         "C",
         "X",
     ]
-    for numero_regio_pfam in range(0, len(llista_prot_rs_amino_distinctprot)):
-        diccionario_freq_abs = dict(
-            collections.Counter(llista_prot_rs_amino_distinctprot[numero_regio_pfam][3])
-        )
-        if "-" not in diccionario_freq_abs:
+    for n_reg_pfam in range(0, len(l_rs)):
+        d_freq_abs = dict(collections.Counter(l_rs[n_reg_pfam][3]))
+        if "-" not in d_freq_abs:
             gap = 0
         else:
-            gap = diccionario_freq_abs["-"]
-            del diccionario_freq_abs["-"]
-        if "X" not in diccionario_freq_abs:
-            equis = 0
+            gap = d_freq_abs["-"]
+            del d_freq_abs["-"]
+        if "X" not in d_freq_abs:
+            x = 0
         else:
-            equis = diccionario_freq_abs["X"]
-            del diccionario_freq_abs["X"]
-        if "Z" in diccionario_freq_abs:
+            x = d_freq_abs["X"]
+            del d_freq_abs["X"]
+        if "Z" in d_freq_abs:
             print("hi ha una Z en laliniament")
-        if "B" in diccionario_freq_abs:
+        if "B" in d_freq_abs:
             print("hi ha una B en laliniament: ")
-        llargada_sense_gap = len(
-            llista_prot_rs_amino_distinctprot[numero_regio_pfam][3]
-        ) - (
-            gap + equis
-        )  # li trec els gaps i les x a la llargada total de les posicions
-        fx = (
-            diccionario_freq_abs[
-                llista_prot_rs_amino_distinctprot[numero_regio_pfam][2]
-            ]
-            / llargada_sense_gap
-        )
-        #        print(fx)
-        diccionario_freq_relatives = dict()
-        for aminoacid in diccionario_freq_abs:
-            diccionario_freq_relatives[aminoacid] = (
-                diccionario_freq_abs[aminoacid] / llargada_sense_gap
-            )
-        #        print(diccionario_freq_relatives)
-        if distinct_aa in diccionario_freq_relatives:
-            fx_amino_nou = diccionario_freq_relatives[distinct_aa]
+        len_no_gap = len(l_rs[n_reg_pfam][3]) - (
+            gap + x
+        )  # li trec els gaps i les x a la llargada total de les posns
+        fx = d_freq_abs[l_rs[n_reg_pfam][2]] / len_no_gap
+        d_freq_rel = dict()
+        for aminoacid in d_freq_abs:
+            d_freq_rel[aminoacid] = d_freq_abs[aminoacid] / len_no_gap
+        if aa in d_freq_rel:
+            fx_amino_nou = d_freq_rel[aa]
         else:
             fx_amino_nou = 0
-        #        print(fx_amino_nou)
         suma = 0.0
-        for aminoacid_dict in diccionario_freq_relatives:
-            suma += diccionario_freq_relatives[aminoacid_dict] * log(
-                diccionario_freq_relatives[aminoacid_dict]
-            )
-        #        print(entropia_inicial)
-        #        print(suma)
-        entropia = entropia_inicial + suma
-        #        print(entropia)
+        for d_aa in d_freq_rel:
+            suma += d_freq_rel[d_aa] * log(d_freq_rel[d_aa])
+        entropia = entro_ini + suma
         return fx, fx_amino_nou, entropia
 
 
-def extract_data_taula_proteines_entropia(data_llista):
+def ext_prot_entro(l_data):
     """
-    :param data_llista: llista de cada linia del arxiu text de Uniprot
-    :return: una llista de llistes amb: [ID uniprot, AC el codi uniprot, GN nom gen, [PFAM]
+    :param l_data: llista de cada linia del arxiu text de Uniprot
+    :return: una llista de llistes amb: [ID uniprot, AC el code uniprot, GN nom gen, [PFAM]
     """
-    dna_loc = list()
+    dna_loc, l1, l_of_l = [], [], []
     loc = ""
-    codi = ""
-    llista1 = list()
-    llista_de_llistes = list()
-    for data_string in data_llista:
-        if data_string[0:2] == "AC" and codi == "":
-            AC_list = data_string.split(";")
-            codi = AC_list[0][5:]
-        elif data_string[0:2] == "  ":
-            adn = data_string.strip("\n ")
+    code = ""
+    for data_str in l_data:
+        if data_str[0:2] == "AC" and code == "":
+            l_ac = data_str.split(";")
+            code = l_ac[0][5:]
+        elif data_str[0:2] == "  ":
+            adn = data_str.strip("\n ")
             dna_loc.append(adn.replace(" ", ""))
-        elif data_string[0:2] == "FT":
-            FT_list = data_string.split(" ")
-            for n in FT_list:
+        elif data_str[0:2] == "FT":
+            l_ft = data_str.split(" ")
+            for n in l_ft:
                 if n == "TRANSMEM":
                     loc = "transm_loc"
-        elif data_string[0:2] == "//" and loc == "transm_loc":
-            llista1.append(codi)
-            llista1.append(dna_loc)
-            llista_de_llistes.append(llista1)
-            dna_loc = []
-            llista1 = []
-            codi = ""
+        elif data_str[0:2] == "//" and loc == "transm_loc":
+            l1.append(code)
+            l1.append(dna_loc)
+            l_of_l.append(l1)
+            dna_loc, l1 = [], []
+            code = ""
             loc = ""
-        elif data_string[0:2] == "//" and loc == "":
-            dna_loc = []
-            llista1 = []
-            codi = ""
+        elif data_str[0:2] == "//" and loc == "":
+            dna_loc, l1 = [], []
+            code = ""
         else:
             continue
-    return llista_de_llistes
+    return l_of_l
 
 
-def crear_llista_prot_seqamino_entropia(data_locations_net):
+def create_l_prot_entro(data_loc):
     """
-    :param data_locations:  una llista de llist
+    :param data_locations:  una llista de l
     :return: una llista de llistes
     """
-    llist = list()
-    final_list = list()
-    string_adn = ""
-    for num_proteina in range(0, len(data_locations_net)):
-        nom_uniprot = data_locations_net[num_proteina][0]
-        dna_full = data_locations_net[num_proteina][1]
+    l, l_f = [], []
+    str_adn = ""
+    for n_prot in range(0, len(data_loc)):
+        uniprot = data_loc[n_prot][0]
+        dna_full = data_loc[n_prot][1]
         for adn in dna_full:
-            string_adn += adn
-        llist.append(nom_uniprot)
-        llist.append(string_adn)
-        final_list.append(llist)
-        string_adn = ""
-        llist = []
-    return final_list
+            str_adn += adn
+        l.append(uniprot)
+        l.append(str_adn)
+        l_f.append(l)
+        str_adn = ""
+        l = []
+    return l_f
 
 
-def extract_data_taula_snip_regions_entropia(data_llista):
+def snp_reg_entro(l_data):
     """
-    :param data_llista: llista de cada linia del arxiu text de Uniprot
-    :return: una llista de llistes amb: [Accesion de el codi uniprot, [ llista de posicions transmembrana], [llista de SNPs RS]], [llista snips VAR]] i descarta les proteines sense regio transmembrana
+    :param l_data: llista de cada linia del arxiu text de Uniprot
+    :return: una llista de llistes amb: [Accesion de el code uniprot, [ llista de posns transmembrana], [llista de SNPs RS]], [llista snp VAR]] i descarta les proteines sense regio transmembrana
     """
     id_var_loc = ""
     loc = ""
-    codi = ""
-    sub_loc = list()
-    variant_loc = list()
-    variant_id = list()
-    variant_rs = list()
-    llista1 = list()
-    llista_de_llistes = list()
-    for data_string in data_llista:
-        if data_string[0:2] == "AC" and codi == "":
-            AC_list = data_string.split(";")
-            codi = AC_list[0][5:]
-        elif data_string[0:2] == "FT":
-            if data_string[5:13] == "TRANSMEM":
+    code = ""
+    sub_loc, var_loc, var_id, var_rs, l1, l_of_l = [], [], [], [], [], []
+    for data_str in l_data:
+        if data_str[0:2] == "AC" and code == "":
+            l_ac = data_str.split(";")
+            code = l_ac[0][5:]
+        elif data_str[0:2] == "FT":
+            if data_str[5:13] == "TRANSMEM":
                 loc = "transm_loc"
-                sub_loc.append(data_string[13:27])
-            elif data_string[5:12] == "VARIANT":
-                variant_rs.append("-")
+                sub_loc.append(data_str[13:27])
+            elif data_str[5:12] == "VARIANT":
+                var_rs.append("-")
                 id_var_loc = "trobat"
-                variant_loc.append(data_string[20:-2])
-            if id_var_loc == "trobat" and data_string.find("/FTId=") != -1:
-                variant_id.append(data_string[40:50])
+                var_loc.append(data_str[20:-2])
+            if id_var_loc == "trobat" and data_str.find("/FTId=") != -1:
+                var_id.append(data_str[40:50])
                 id_var_loc = ""
-            if id_var_loc == "trobat" and data_string.find("dbSNP:rs") != -1:
-                variant_rs.pop(len(variant_rs) - 1)
-                variant_rs.append(
-                    data_string[
-                        data_string.find("dbSNP:rs")
-                        + 6 : data_string.find("dbSNP:rs")
-                        + 16
+            if id_var_loc == "trobat" and data_str.find("dbSNP:rs") != -1:
+                var_rs.pop(len(var_rs) - 1)
+                var_rs.append(
+                    data_str[
+                        data_str.find("dbSNP:rs") + 6 : data_str.find("dbSNP:rs") + 16
                     ].rstrip(").\n")
                 )
-        elif data_string[0:2] == "//" and loc == "transm_loc":
-            llista1.append(codi)
-            llista1.append(sub_loc)
-            llista1.append(variant_loc)
-            llista1.append(variant_id)
-            llista1.append(variant_rs)
-            llista_de_llistes.append(llista1)
-            sub_loc = []
-            variant_loc = []
-            variant_id = []
-            variant_rs = []
-            llista1 = []
-            codi = ""
+        elif data_str[0:2] == "//" and loc == "transm_loc":
+            l1.append(code)
+            l1.append(sub_loc)
+            l1.append(var_loc)
+            l1.append(var_id)
+            l1.append(var_rs)
+            l_of_l.append(l1)
+            sub_loc, var_loc, var_id, var_rs, l1 = [], [], [], [], []
+            code = ""
             loc = ""
-        elif data_string[0:2] == "//" and loc == "":
-            sub_loc = []
-            variant_loc = []
-            variant_id = []
-            variant_rs = []
-            llista1 = []
-            codi = ""
+        elif data_str[0:2] == "//" and loc == "":
+            sub_loc, var_loc, var_id, var_rs, l1 = [], [], [], [], []
+            code = ""
         else:
             continue
-    return llista_de_llistes
+    return l_of_l
 
 
-def descart_regio_no_transmembrana_entropia(data_locations_net):
+def rm_no_stm_entro(data_loc):
     """
-    :param data_locations:  una llista de llistes amb: [Accesion de el codi uniprot, [ llista de posicions transmembrana], [llista de SNPs RS]], [llista snips VAR]]
-    :return: una llista de llistes amb: [Accesion de el codi uniprot, [ llista de posicions transmembrana], [llista de SNPs RS]], [llista snips VAR], [llista posicio snips transmembraana]]
+    :param data_locations:  una llista de llistes amb: [Accesion de el code uniprot, [ llista de posns transmembrana], [llista de SNPs RS]], [llista snp VAR]]
+    :return: una llista de llistes amb: [Accesion de el code uniprot, [ llista de posns transmembrana], [llista de SNPs RS]], [llista snp VAR], [llista pos snp transmembraana]]
     """
-    llist = list()
-    final_list = list()
-    coord_trans = list()
-    snips_sols = list()
-    for num_proteina in range(0, len(data_locations_net)):
-        nom_uniprot = data_locations_net[num_proteina][0]
-        posicions_transmem = data_locations_net[num_proteina][1]
-        snp_rs = data_locations_net[num_proteina][2]
-        snp_var = data_locations_net[num_proteina][3]
-        snp_rs_sol = data_locations_net[num_proteina][4]
+    l_f, coord_trans, l_snps = [], [], []
+    for n_prot in range(0, len(data_loc)):
+        uniprot = data_loc[n_prot][0]
+        pos_tm = data_loc[n_prot][1]
+        snp_rs = data_loc[n_prot][2]
+        snp_var = data_loc[n_prot][3]
+        snp_rs_s = data_loc[n_prot][4]
         if len(snp_rs) != len(snp_var):
-            print("hi ha un problema amb els snps, no tots tenen codi VAR_... ")
-            print("la proteina es: " + snp_var)
+            print("Problem with SNPs, some don't have code VAR_...")
+            print("Protein: " + snp_var)
             sys.exit()
-        if len(snp_var) != len(snp_rs_sol):
-            print(
-                "hi ha un problema amb els snps, no es crean be els codis rs dels snips... "
-            )
+        if len(snp_var) != len(snp_rs_s):
+            print("Problem with SNPs, the rs codes don't be created well...")
             sys.exit()
-        llista_snp_transmem = zerolistmaker(len(snp_rs))
-        for snips in snp_rs:
-            snips_sols.append(snips[:7].strip())
-        for coordenades in posicions_transmem:
-            coord_trans.append(coordenades)
-            primera_coordenada_transmembrana = coordenades[:7].strip()
-            segona_coordenada_transmembrana = coordenades[7:].strip()
-            for snips in snp_rs:
-                posicio_snp = snips[:7].strip()
-                if int(posicio_snp) >= int(primera_coordenada_transmembrana) and int(
-                    posicio_snp
-                ) <= int(segona_coordenada_transmembrana):
-                    llista_snp_transmem.pop(len(llista_snp_transmem) - 1)
-                    llista_snp_transmem.insert(snp_rs.index(snips), 1)
-        llist.append(nom_uniprot)
-        llist.append(posicions_transmem)
-        llist.append(snp_var)
-        llist.append(snp_rs_sol)
-        llist.append(snips_sols)
-        llist.append(llista_snp_transmem)
-        final_list.append(llist)
-        llist = []
-        coord_trans = []
-        snips_sols = []
-    return final_list
+        l_snp_tm = zerolistmaker(len(snp_rs))
+        for snp in snp_rs:
+            l_snps.append(snp[:7].strip())
+        for coords in pos_tm:
+            coord_trans.append(coords)
+            x_coord_tm = coords[:7].strip()
+            y_coord_tm = coords[7:].strip()
+            for snp in snp_rs:
+                pos_snp = snp[:7].strip()
+                if int(pos_snp) >= int(x_coord_tm) and int(pos_snp) <= int(y_coord_tm):
+                    l_snp_tm.pop(len(l_snp_tm) - 1)
+                    l_snp_tm.insert(snp_rs.index(snp), 1)
+        l_f.append([uniprot, pos_tm, snp_var, snp_rs_s, l_snps, l_snp_tm])
+        coord_trans, l_snps = [], []
+    return l_f

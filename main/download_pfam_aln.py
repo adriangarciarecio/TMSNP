@@ -4,148 +4,124 @@ import requests
 import mysql.connector
 import os
 import subprocess
+import sqlalchemy as sql
+import pandas as pd
 from iker_snp import *
 
 ###seleccionar els diferents pfam de les taules de mysql#####################3
 
-pfam_download_path = "./pfam_download/"
+path_pfam = "./pfam/pfam_download/"
 
-if not os.path.exists(pfam_download_path):
-    os.makedirs(pfam_download_path)
+if not os.path.exists(path_pfam):
+    os.makedirs(path_pfam)
 
-pfam_download_path_sys = pfam_download_path[:-1]
+path_pfam_sys = path_pfam[:-1]
 
 # Set the connection
-conn = mysql.connector.connect(
-    host="alf03.uab.cat",
-    user="lmcdb",
-    password=os.getenv("LMCDB_PASS"),
-    database="tmsnp",
-)
-mycursor = conn.cursor()
-
+# engine = sql.create_engine(
+#     f"mysql://lmcdb:{os.getenv('LMCDB_PASS')}@alf03.uab.cat/tmsnp"
+# )
+engine = sql.create_engine(f"mysql://adrian:compmod5@localhost/tmsnp")
+connection = engine.connect()
 
 print("Downloading data from PFAM...")
 
-
-mycursor.execute("select distinct acc from snps;")
-distinct_acc_tupple = mycursor.fetchall()
-distinct_acc_list = list()
-for tupple in distinct_acc_tupple:
-    for acc in tupple:
-        distinct_acc_list.append(acc)
-
-
-distinct_pfam_list = list()
-for distinct_acc in distinct_acc_list:
-    mycursor.execute(
-        "select distinct pfam from receptor_pfam where acc = '" + distinct_acc + "';"
-    )
-    distinct_pfam_tupple = mycursor.fetchall()
-    for tupple in distinct_pfam_tupple:
-        for pfam in tupple:
-            if pfam not in distinct_pfam_list:
-                distinct_pfam_list.append(pfam)
-            else:
-                continue
-
-print(distinct_pfam_list)
+data = pd.read_sql("select distinct pfam from receptor_pfam;", engine)
+l_pfam = data.pfam
 
 # curl
-total_pfams = len(distinct_pfam_list)
-for i, pfam_key in enumerate(distinct_pfam_list):
+total_pfams = len(l_pfam)
+for i, pfam_key in enumerate(l_pfam):
     print(pfam_key, "remaining families:", total_pfams - i)
     link = (
         "http://pfam.xfam.org/family/"
         + pfam_key
         + "/alignment/full/format?format=pfam&alnType=full&order=t&case=u&gaps=dashes&download=0"
     )
-    run_curl(link, pfam_download_path + pfam_key)
+    run_curl(link, path_pfam + pfam_key)
 
 print("... Done!!!")
 ################################################################################
 # Manage errors
 
 print("Trying to get alignments that were not downloaded...")
-abecedari = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
-llista_pfam_errors = ["control"]
-download_counter = 0
+abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+l_pfam_err = ["control"]
+c_down = 0
 
-while len(llista_pfam_errors) != 0:
-    if download_counter < 20:
-        pfam_list = os.listdir(pfam_download_path_sys)
-        llista_pfam_errors = list()
+while len(l_pfam_err) != 0:
+    if c_down < 20:
+        pfam_list = os.listdir(path_pfam_sys)
+        l_pfam_err = list()
         for pfam in pfam_list:
-            data_llista = file_to_lines(pfam_download_path + pfam)
-            for aliniament in data_llista:
-                if aliniament[0:9] == "<!DOCTYPE":
-                    print("hi ha error en el pfam: " + pfam)
-                    llista_pfam_errors.append(pfam)
-        print(llista_pfam_errors)
+            l_data = file_to_lines(path_pfam + pfam)
+            for align in l_data:
+                if align[0:9] == "<!DOCTYPE":
+                    print("Error: " + pfam)
+                    l_pfam_err.append(pfam)
+        print(l_pfam_err)
 
-        for pfam_key in llista_pfam_errors:
-            os.remove(pfam_download_path + pfam_key)
+        for pfam_key in l_pfam_err:
+            os.remove(path_pfam + pfam_key)
             link = (
                 "http://pfam.xfam.org/family/"
                 + pfam_key
                 + "/alignment/full/format?format=pfam&alnType=full&order=t&case=u&gaps=dashes&download=0"
             )
-            run_curl(link, pfam_download_path + pfam_key)
+            run_curl(link, path_pfam + pfam_key)
 
-        download_counter += 1
-        print(download_counter)
+        c_down += 1
+        print(c_down)
     else:
-        for pfam_dolent in llista_pfam_errors:
-            print("filename:", pfam_download_path + pfam_dolent)
+        for bad_pfam in l_pfam_err:
+            print("filename:", path_pfam + bad_pfam)
             # Write a file with an error message instead of removing the file
-            # outf1 = open(pfam_download_path + pfam_dolent, 'w')
+            # outf1 = open(path_pfam + bad_pfam, 'w')
             # print('ERROR_ERROR/69-117             ----------------------------------', file=outf1)
             # outf1.close()
-            os.remove(pfam_download_path + pfam_dolent)
-            print(
-                "eliminat per error en la descarrega del servidor (html) pfam el : "
-                + pfam_dolent
-            )
+            os.remove(path_pfam + bad_pfam)
+            print("Removed by error while the pfam file is downloading: " + bad_pfam)
         break
 
-llista_pfam_errors = ["control"]
-download_counter = 0
+l_pfam_err = ["control"]
+c_down = 0
 
-while len(llista_pfam_errors) != 0:
-    if download_counter < 5:
-        pfam_list = os.listdir(pfam_download_path_sys)
-        llista_pfam_errors = list()
+while len(l_pfam_err) != 0:
+    if c_down < 5:
+        pfam_list = os.listdir(path_pfam_sys)
+        l_pfam_err = list()
         for pfam in pfam_list:
-            data_llista = file_to_lines(pfam_download_path + pfam)
-            for aliniament in data_llista:
-                if abecedari.find(aliniament[0]) == -1:
-                    if pfam not in llista_pfam_errors:
-                        llista_pfam_errors.append(pfam)
-                        print("hi ha error en el pfam: " + pfam)
-        print(llista_pfam_errors)
+            l_data = file_to_lines(path_pfam + pfam)
+            for align in l_data:
+                if abc.find(align[0]) == -1:
+                    if pfam not in l_pfam_err:
+                        l_pfam_err.append(pfam)
+                        print("Error: " + pfam)
+        print(l_pfam_err)
 
-        for pfam_key in llista_pfam_errors:
-            os.remove(pfam_download_path + pfam_key)
+        for pfam_key in l_pfam_err:
+            os.remove(path_pfam + pfam_key)
             link = (
                 "http://pfam.xfam.org/family/"
                 + pfam_key
                 + "/alignment/full/format?format=pfam&alnType=full&order=t&case=u&gaps=dashes&download=0"
             )
-            run_curl(link, pfam_download_path + pfam_key)
+            run_curl(link, path_pfam + pfam_key)
 
-        download_counter += 1
-        print(download_counter)
+        c_down += 1
+        print(c_down)
     else:
-        for pfam_dolent in llista_pfam_errors:
-            os.remove(pfam_download_path + pfam_dolent)
-            outf1 = open(pfam_download_path + pfam_dolent, "w")
+        for bad_pfam in l_pfam_err:
+            os.remove(path_pfam + bad_pfam)
+            outf1 = open(path_pfam + bad_pfam, "w")
             print(
                 "ERROR_ERROR/69-117             ----------------------------------",
                 file=outf1,
             )
             outf1.close()
             print(
-                "eliminat i creat en blanc per error en la descarrega del servidor (no completa la descarrega) pfam el : "
-                + pfam_dolent
+                "Removend and created in blank. Error found while the file was downloading from server: "
+                + bad_pfam
             )
         break
+connection.close()
