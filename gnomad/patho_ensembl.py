@@ -9,8 +9,8 @@ import os
 import pandas as pd
 
 
-list1 = open("ensembl_list.txt")  # input
-list3 = open("list2.txt", "w")
+list1 = open("ensembl_list_all.txt")  # input
+list3 = open("ensembl_list_model.txt", "w")
 
 
 # Set the connection

@@ -8,13 +8,25 @@ import sqlalchemy as sql
 import os
 import pandas as pd
 import numpy as np
+import sys
 
 # Set the connection
 # engine = sql.create_engine(
 #     f"mysql://lmcdb:{os.getenv('LMCDB_PASS')}@alf03.uab.cat/tmsnp"
 # )
+select = int(sys.argv[1])  # Selection mode
 engine = sql.create_engine(f"mysql://adrian:compmod5@localhost/tmsnp")
 connection = engine.connect()
+
+if select == 1:
+    print("> Creating snps_all!")
+    try:
+        connection.execute("drop table if exists snps_all;")
+        connection.execute(
+            "CREATE TABLE snps_all AS SELECT * FROM snps;"
+        )  # Use the table snps as base
+    except:
+        print("> Error!")
 
 three2one = {
     "Cys": "C",
@@ -57,12 +69,12 @@ df_gnomad["pathogenic"] = 0
 total_mut = len(df_gnomad)
 for i in df_gnomad.index:  # range(3000):  for testing
     if i % 1000 == 0:
-        print(round(i / total_mut * 100, 2))
+        print(str(round(i / total_mut * 100, 2)) + " Code: " + str(df_gnomad["acc"][i]))
     snp_data = df_gnomad.loc[i]
     df_prot_tms = df_tm[df_tm["acc"] == snp_data["acc"]]
     for j, row in df_prot_tms.iterrows():
         if row.tm_start <= snp_data["snp_pos"] and row.tm_final >= snp_data["snp_pos"]:
-            # print(row,  snp_data['snp_pos'])
+            # print(row, snp_data["snp_pos"])
             df_gnomad.loc[i, "tm"] = 1
             break
 
@@ -72,15 +84,28 @@ del df_gnomad_tm["tm"]
 
 # Add pathogenic column
 try:
-    connection.execute(
-        "alter table snps add column gnomad_freq float(20,10) after pathogenic;"
-    )
+    if select == 0:
+        connection.execute(
+            "alter table snps add column gnomad_freq float(20,10) after pathogenic;"
+        )
+    if select == 1:
+        connection.execute(
+            "alter table snps_all add column gnomad_freq float(20,10) after pathogenic;"
+        )
 except:
     pass
 
 # df_gnomad_tm.to_csv('gnomad_tm.csv')
 
-df_gnomad_tm.to_sql("snps", engine, if_exists="append", index=False, chunksize=1000)
+if select == 0:
+    print("> Modifying snps table!")
+    df_gnomad_tm.to_sql("snps", engine, if_exists="append", index=False, chunksize=1000)
+
+if select == 1:
+    print("> Modifying snps_all table!")
+    df_gnomad_tm.to_sql(
+        "snps_all", engine, if_exists="append", index=False, chunksize=1000
+    )
 
 # in case of problems:
 # delete * from snps where gnomad_freq is not NULL;

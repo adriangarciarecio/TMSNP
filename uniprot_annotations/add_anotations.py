@@ -11,6 +11,7 @@ import sqlalchemy as sql
 import os
 import pandas as pd
 import numpy as np
+import sys
 
 # Set the connection
 # engine = sql.create_engine(
@@ -18,6 +19,11 @@ import numpy as np
 # )
 engine = sql.create_engine(f"mysql://adrian:compmod5@localhost/tmsnp")
 connection = engine.connect()
+select = int(sys.argv[1])  # Selection mode
+if select == 0:
+    data_name = "snp_eval"
+if select == 1:
+    data_name = "snp_eval_all"
 
 annotations = [
     "act_site",
@@ -35,32 +41,32 @@ total = len(annotations + annotations_2res)
 for ii, annotation in enumerate(annotations):
     print(f"{annotation} ({ii+1}/{total})")
     try:
-        connection.execute(f"alter table snp_eval add column {annotation} int(1);")
+        connection.execute(f"alter table {data_name} add column {annotation} int(1);")
     except:
         pass
 
     df = pd.read_csv(f"{annotation}.txt", sep="\t", header=None)
     df.columns = ["acc", "snp_pos"]
     for i in df.index:
-        out = f"""update snp_eval set {annotation}=1 where acc="{df.loc[i]['acc']}" and snp_pos={df.loc[i]['snp_pos']};"""
+        out = f"""update {data_name} set {annotation}=1 where acc="{df.loc[i]['acc']}" and snp_pos={df.loc[i]['snp_pos']};"""
         connection.execute(out)
 
 for j, annotation in enumerate(annotations_2res):
     print(f"{annotation} ({j+ii+2}/{total})")
     try:
-        connection.execute(f"alter table snp_eval add column {annotation} int(1)")
+        connection.execute(f"alter table {data_name} add column {annotation} int(1)")
     except:
         pass
 
     df = pd.read_csv(f"{annotation}.txt", sep="\t", header=None)
     df.columns = ["acc", "snp_pos1", "snp_pos2"]
     for i in df.index:
-        out = f"""update snp_eval set {annotation}=1 where acc="{df.loc[i]['acc']}" and snp_pos={df.loc[i]['snp_pos1']};"""
+        out = f"""update {data_name} set {annotation}=1 where acc="{df.loc[i]['acc']}" and snp_pos={df.loc[i]['snp_pos1']};"""
         connection.execute(out)
-        out = f"""update snp_eval set {annotation}=1 where acc="{df.loc[i]['acc']}" and snp_pos={df.loc[i]['snp_pos2']};"""
+        out = f"""update {data_name} set {annotation}=1 where acc="{df.loc[i]['acc']}" and snp_pos={df.loc[i]['snp_pos2']};"""
         connection.execute(out)
 
 for annotation in annotations + annotations_2res:
-    out = f"""update snp_eval set {annotation}=0 where {annotation} is NULL"""
+    out = f"""update {data_name} set {annotation}=0 where {annotation} is NULL"""
     connection.execute(out)
 

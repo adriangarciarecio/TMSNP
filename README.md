@@ -15,15 +15,15 @@ This is a collection of scripts to set up or update the TMSNP database. They sho
   -  ./main/nonpathogenic_proteins.py (runs in seconds)
 
 - Get SNPs from Clinvar and GNOMAD 
-  - Generate ensembl_list.txt (*PENDING*)
-  - ./gnomad/Gnomad.sh (runs in a few hours)
-  - ./gnomad/gnomad2tmsnp.py (runs in minutes)
+  - Generate ensembl_list.txt (*PENDING*) 
+  - ./gnomad/Gnomad.sh (runs in a few hours) *Note: If you want to get all annotations (Nonpathogenic and pathogenic) use ensembl_list_all.txt on gnomad_download.py insted of ensembl_list_model.txt 
+  - ./gnomad/gnomad2tmsnp.py 0 or 1(runs in minutes/ hours) *Note: select 0 if you want evaluate_snps for training the model or 0 if you want evaluate_snps for all annotations.
 
 - Check and remove duplicates after combining Uniprot ClinVar and GNOMAD (we keep Uniprot > ClinVar > GNOMAD)
-  - ./main/duplicates_3db.py (runs in seconds)
+  - ./main/duplicates_3db.py 0 or 1 (runs in seconds) *Note: select 0 if you want evaluate_snps for training the model or 0 if you want evaluate_snps for all 
 
 - Complete snps table with id and gene entries (needs file ensembl_list.txt)
-  - ./main/get_id.py (runs in minutes)
+  - ./main/get_id.py 0 or 1 (runs in few minutes/ minutes) *Note: select 0 if you want evaluate_snps for training the model or 0 if you want evaluate_snps for all 
   
 - Download the PFAM alignments
   - ./main/download_pfam_aln.py (runs in hours) 
@@ -31,15 +31,15 @@ This is a collection of scripts to set up or update the TMSNP database. They sho
       - ./main/from_full_aln.py (to complete the alignments that failed in the previous step; runs in hours)
 
 - Evaluate entropy, substitution…
-  - ./main/evaluate_snps.py (runs in hours)
-
+  - ./main/evaluate_snps.py 0 or 1 (runs in hours) *Note: select 0 if you want evaluate_snps for training the model or 0 if you want evaluate_snps for all annotations. 
+  - ./main/remove_acc.py (ONLY IN CASE IF YOU SELECT THE MODE 0)
       THE NEXT STEP IS NOT NECESSARY!!!!
 - A second round of remove duplicates (whith duplicate PFAM records ...)
   - ./main/duplicates_pfam.py 
 
 - Add Uniprot annotations relevant to positions
   - ./uniprot_annotations/Annotations.sh (runs in seconds)
-  - ./uniprot_annotations/add_anotations.py (runs in minutes)
+  - ./uniprot_annotations/add_anotations.py (runs in minutes) *Note: select 0 if you want evaluate_snps for training the model or 0 if you want evaluate_snps for all annotations. 
 
 - Get SIFT and POLYPHEN2 scores
   - ./sift_polyphen/send_sift_polyphen.py 
