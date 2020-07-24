@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>TMSNP-RESULT</title>
+  <link rel="icon" type="image/ico" href="./static/images/logo.png">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./static/bootstrap.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  <style>
+    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+    .row.content {
+      height: 350px
+    }
+
+    /* Set gray background color and 100% height */
+    .sidenav {
+      background-color: #f1f1f1;
+    }
+
+    /* On small screens, set height to 'auto' for the grid */
+    @media screen and (max-width: 767px) {
+      .row.content {
+        height: auto;
+      }
+    }
+  </style>
+  <script>
+    $(document).ready(function () {
+      $('#header').load('static/header.html');
+      $('#path').load('static/paths.html');
+    });
+  </script>
+</head>
+
+
+<body>
+  <header id="header" style="background-color: rgb(190, 188, 188); padding-bottom: 20px">
+  </header>
+  <div class="container-fluid">
+    <div class="row content" style="height:40%">
+      <div id="path"> </div>
+      <br>
+
+      <div class="col-sm-9" style="display:inline-block; margin-left: 20%">
+        <div class="well" style="margin-right: -40px;position: absolute; width: 850px">
+          <h3>Some parameter are empty! </h3>
+          <a href="/tmsnp/">- Back -</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>

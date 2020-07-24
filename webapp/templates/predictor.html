@@ -1,0 +1,64 @@
+<div class="col-sm-9" style="display:inline-block; margin-left: 20%">
+  <div class="row" style="position: relative; width: 70%; float: left;">
+    <div class="col-sm-7" style="width:95%">
+      <div class="well">
+        <h3>Transmembrane SNP Pathogenecity prediction:</h3>
+        <h5>Write down the specified fields and RUN it</h5>
+        <div class="well">
+          <div id="loading"></div>
+          <form action="/tmsnp/results_pred" method="POST">
+            <div class="row">
+              <label for="input_seq">Accession number / Uniprot ID (e.g. FZD4_HUMAN / Q9UPI3):</label>
+              <input id="input_seq_acc" type="text" name="input_seq_acc" style="width:100%">
+            </div>
+            <div class="row">
+              <label for="input_seq">Amino acid SNP position:</label>
+              <input id="input_seq_pos" type="text" name="input_seq_pos" style="width:100%">
+            </div>
+            <div class="row">
+              <label for="input_seq">Original Aminoacid:</label>
+              <input id="input_seq_aai" type="text" name="input_seq_aai" style="width:100%">
+            </div>
+            <div class="row">
+              <label for="input_seq">New Aminoacid:</label>
+              <input id="input_seq_aaf" type="text" name="input_seq_aaf" style="width:100%">
+            </div>
+            <div class="row">
+              <br>
+              <input id="run" type="submit" name="submit" value="Run" onclick="loading()">
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6" style="width:95%">
+      <div class="well">
+        <div id="loading_2"></div>
+        <h3>List SNPs with pathogenicity tags:</h3>
+        <form action="/tmsnp/results" method="post">
+          <label for="input_seq">Type your Uniprot ID / Protein accession number (e.g. FZD4_HUMAN / Q9UPI3):</label>
+          <p><input id="input_seq" type="text" name="input_seq" style="width:100%" /></p>
+          <p><input type="submit" name="submit" value="Run" onclick="loading_2()" /></p>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- <div class="well" style="position: relative; width: 30%; float: left;">
+          <h4>What is the difference between an accession number (AC) and the entry name?</h4>
+          <p style="text-align: justify">An accession number (AC) is assigned to each sequence upon inclusion into
+            UniProtKB. Accession numbers
+            are
+            stable from release to release. If several UniProtKB entries are merged into one, for reasons of
+            minimizing
+            redundancy, the accession numbers of all relevant entries are kept. Each entry has one primary AC and
+            optional secondary ACs. <br> <br>
+            The 'Entry name' (formerly ID) is a unique identifier, often containing biologically relevant
+            information.
+            It is sometimes necessary, for reasons of consistency, to change IDs (for example to ensure that related
+            entries have similar names). Another common cause for changing an ID is when an entry is promoted from
+            UniProtKB's TrEMBL section (with computationally-annotated records) to the Swiss-Prot section (with fully
+            curated records). However, an accession number (AC) is always conserved, and therefore allows unambiguous
+            citation of UniProt entries. If a UniProtKB entry contains more than one accession number, the first one
+            (or primary accession number) should be cited. </p>
+        </div> -->
+</div>

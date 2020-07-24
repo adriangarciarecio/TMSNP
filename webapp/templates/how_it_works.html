@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>TMSNP-ABOUT</title>
+  <link rel="icon" type="image/ico" href="./static/images/logo.png">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./static/bootstrap.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="./static/style.css" type="text/css">
+
+  <style>
+    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+    .row.content {
+      height: 350px
+    }
+
+    /* Set gray background color and 100% height */
+    .sidenav {
+      background-color: #f1f1f1;
+    }
+
+    /* On small screens, set height to 'auto' for the grid */
+    @media screen and (max-width: 767px) {
+      .row.content {
+        height: auto;
+      }
+    }
+
+    #example {
+      width: 100%;
+      padding: 50px 0;
+      text-align: center;
+      background-color: lightblue;
+      margin-top: 20px;
+      box-shadow: -10px 0px 13px -7px #000000, 10px 0px 13px -7px #000000, 5px 5px 15px 5px rgba(0, 0, 0, 0);
+      border-radius: 20px 20px 20px 20px;
+    }
+
+    #loading {
+      background: url('./static/double_ring.gif') no-repeat center center;
+      position: absolute;
+      top: 189px;
+      left: 36px;
+      height: 461px;
+      width: 1337px;
+      z-index: -100;
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+  </style>
+
+</head>
+<script>
+  function show_ex1() {
+    var x = document.getElementById("example_1");
+    if (x.style.display === "block") {
+      x.style.display = "none";
+    } else {
+      x.style.display = "block";
+    }
+  }
+
+  function show_ex2() {
+    var x = document.getElementById("example_2");
+    if (x.style.display === "block") {
+      x.style.display = "none";
+    } else {
+      x.style.display = "block";
+    }
+  }
+
+  function loading() {
+    document.getElementById("loading").style.zIndex = 9999999;
+  }
+  $(document).ready(function () {
+    $('#header').load('static/header.html');
+    $('#path').load('static/paths.html');
+    $('#footer').load('static/footer.html');
+  });
+</script>
+
+
+<body>
+  <header id="header" style="background-color: rgb(190, 188, 188); padding-bottom: 20px">
+  </header>
+  <div class="container-fluid">
+    <div class="row content" style="height:40%">
+      <div id="path"> </div>
+      <br>
+    </div>
+    <br>
+    <br>
+
+    <div class="col-sm-9" style="display:inline-block; margin-left: 20%; top: -40px">
+      <div class="well">
+        <h2>How it works?</h2>
+        <!-- <p style="text-align:justify">Next-generation sequencing has speed up the process of sequencing a complete
+          humangenome, while reducing
+          the cost. <br> <br>
+          Consequently, it's use is increasing in health care in order to identify genetic variations and its
+          association with pathology. Single Nucleotide Variants are the most common form of DNA variation
+          in human population and consists in a change in a single nucleotide. One of the current challenges is to be
+          able
+          to predict if a single nucleotide polymorphism can be associated to asingle-genetic diseases. Thus, in order
+          to identify the variant among hundreds of variants in a genome that is the cause of a single genetic disease,
+          in
+          silico mutation prediction tools have been developed these lasts years. <br> <br>
+          These tools are based in mathematical, rule-based, and statistical learning methods relying on evolutionary,
+          sequence, or structural information
+          methods to characterize if a residue substitution in proteins is affecting it's structure and function. These
+          tools are mainly developed for globular proteins. In order to develop a mutation predictor server specific
+          for
+          membrane proteins, we have developed Transmembrane Single Nucleotide Polymorphisms (TMSNP). <br> <br> -->
+        <p style="text-align:justify">
+          This
+          web server aims to predict if a missense mutation in a transmembrane region of a membrane protein is likely to
+          affect the structure and/or function of a protein and consequently being damaging. The predictive algorithm
+          is
+          based on the entropy of the mutated position, the frequency of the non-mutated amino acid and the frequency
+          of the mutated aminoacid computed from PFAM multiple sequence alignments and also on the score associated
+          to the amino acid change. Comparison to existing mutation server shows that TMSNP improves the specificity,
+          although loosing sensitivity in the prediction if a SNP is damaging or not in a membrane protein. </p>
+      </div>
+    </div>
+    <div class="col-sm-9" style="display:inline-block; margin-left: 20%; top: -40px">
+      <div class="well">
+        <p style="text-align:justify">Next you can found some examples: <br> <br> </p>
+        <hr>
+        <h3>Example 1. Perform a prediction about some mutation:</h3>
+        <button onclick="show_ex1()">Show/Hide</button>
+        <div id='example_1' style="display:none">
+          <br>
+          <div class="well">
+            <h3>Transmembrane SNP Pathogenecity prediction:</h3>
+            <h5>Write down the specified fields and RUN it</h5>
+            <div class="well">
+              <div id="loading"></div>
+              <form action="/tmsnp/results_pred" method="POST">
+                <div class="row">
+                  <label for="input_seq">Accession number / Uniprot ID:</label>
+                  <input id="input_seq_acc" type="text" name="input_seq_acc" style="width:100%" value="Q9UPI3">
+                </div>
+                <div class="row">
+                  <label for="input_seq">Aminoacid SNP position:</label>
+                  <input id="input_seq_pos" type="text" name="input_seq_pos" style="width:100%" value="361">
+                </div>
+                <div class="row">
+                  <label for="input_seq">Reference amino acid:</label>
+                  <input id="input_seq_aai" type="text" name="input_seq_aai" style="width:100%" value="V">
+                </div>
+                <div class="row">
+                  <label for="input_seq">Mutated amino acid:</label>
+                  <input id="input_seq_aaf" type="text" name="input_seq_aaf" style="width:100%" value="A">
+                </div>
+                <div class="row">
+                  <br>
+                  <input type="submit" name="submit" value="Run" onclick="loading()">
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <hr>
+        <h3>Example 2. Search SNP information in the TMsnp database:</h3>
+        <button onclick="show_ex2()">Show/Hide</button>
+        <div id='example_2' style="display:none">
+          <br>
+          <div class="well">
+            <h3>List SNPs with pathogenicity tags:</h3>
+            <form action="/tmsnp/results" method="post">
+              <label for="input_seq">Type the Uniprot ID / Protein accession number and click
+                the RUN button:</label>
+              <p><input id="input_seq" type="text" name="input_seq" style="width:100%" value="Q9UPI3" /></p>
+              <p><input type="submit" name="submit" value="Run" /></p>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="well">
+        <h2>Contact</h2>
+        <br>
+        <table class="people" , style="margin-left:40px">
+          <tbody>
+            <!-- <tr>
+              <td>
+                <div class="file">
+                  <div class="info_researcher">
+                    <p class="name_researcher"> Gómez Tamayo, José Carlos<p class="mail_researcher">
+                        josecarlosgt@gmail.com</p>
+                    </p>
+
+                  </div>
+                </div>
+              </td>
+            </tr> -->
+            <tr>
+              <td>
+                <div class="file">
+                  <div class="info_researcher">
+                    <p class="name_researcher">García Recio, Adrián <p class="mail_researcher">
+                        adrian.garcia.recio@gmail.com</p>
+                    </p>
+
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <!-- <tr>
+              <td>
+                <div class="file">
+                  <div class="info_researcher">
+                    <p class="name_researcher">Reina, Iker <p class="mail_researcher">
+                        ikerreina@gmail.com</p>
+                    </p>
+
+                  </div>
+                </div>
+              </td>
+            </tr> -->
+            <!-- <tr>
+              <td>
+                <div class="file">
+                  <div class="info_researcher">
+                    <p class="name_researcher">Olivella, Mireia <p class="mail_researcher"> mireia.olivella@gmail.com
+                      </p>
+                    </p>
+
+                  </div>
+                </div>
+              </td>
+            </tr> -->
+            <!-- <tr>
+              <td>
+                <div class="file">
+                  <div class="info_researcher">
+                    <p class="name_researcher">Cordomí, Arnau <p class="mail_researcher"> arnau.cordomi@gmail.com </p>
+                    </p>
+                  </div>
+                </div>
+              </td>
+            </tr> -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div id="footer" style="background-color: rgb(190, 188, 188); padding-bottom: 20px">
+  </div>
+
+</body>
+
+</html>

@@ -1,0 +1,67 @@
+<script>
+    var pathname = window.location.pathname;
+    if ((pathname == "/tmsnp/")) {
+        var current = document.getElementById("predictor");
+        current.classList.add("active");
+    }
+    if (pathname == "/tmsnp/tmsnpdb") {
+        var current = document.getElementById("database");
+        current.classList.add("active");
+    }
+    if (pathname == "/tmsnp/about") {
+        var current = document.getElementById("manual");
+        current.classList.add("active");
+    }
+</script>
+<style>
+    hr {
+        height: 1px;
+        color: grey;
+        background-color: grey;
+        border: none;
+    }
+
+    a {
+        color: black;
+    }
+
+    .nav-pills>li.active>a,
+    .nav-pills>li.active>a:hover,
+    .nav-pills>li.active>a:focus {
+        background-color: grey;
+    }
+
+    .nav>li>a:hover,
+    .nav>li>a:focus {
+        background-color: lightgrey;
+        border-radius: 4px;
+    }
+
+    #title_menu {
+        text-align: center;
+        font-weight: bold;
+        font-size: 20px;
+    }
+
+    #list {
+        text-align: center;
+    }
+
+    .active {
+        background-color: grey;
+    }
+</style>
+
+<div class="col-sm-2 sidenav hidden-xs"
+    style="position: absolute; margin-left:20px;border: 1px solid black;border-top: 0px;">
+    <h4 id="title_menu" style="margin-top: 20px;"> TMSNP </h4>
+    <hr>
+    <ul id="list" class="nav nav-pills nav-stacked">
+        <li id="predictor"><a href="/tmsnp/">Transmembrane SNP Pathogenecity prediction</a></li>
+        <hr>
+        <li id="database"><a href="/tmsnp/tmsnpdb">TMSNPdb</a></li>
+        <hr>
+        <li id="manual"><a href="/tmsnp/about">About TMSNP</a></li>
+        <!-- <li id="contact"><a href="/tmsnp/help">Help & contact</a></li> -->
+    </ul><br>
+</div>

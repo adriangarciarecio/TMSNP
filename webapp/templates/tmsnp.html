@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>TMSNP-HOME</title>
+  <link rel="icon" type="image/ico" href="./static/images/logo.png">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./static/bootstrap.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="./static/loading-bar.css" />
+  <script type="text/javascript" src="./static/js/loading-bar.js"></script>
+  <style>
+    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+    .row.content {
+      height: 350px
+    }
+
+    /* Set gray background color and 100% height */
+    .sidenav {
+      background-color: #f1f1f1;
+    }
+
+    /* On small screens, set height to 'auto' for the grid */
+    @media screen and (max-width: 767px) {
+      .row.content {
+        height: auto;
+      }
+    }
+
+    #loading {
+      background: url('./static/double_ring.gif') no-repeat center center;
+      position: absolute;
+      top: 0;
+      left: 1.5%;
+      height: 96%;
+      width: 96.7%;
+      z-index: -100;
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+
+    #loading_2 {
+      background: url('./static/double_ring.gif') no-repeat center center;
+      position: absolute;
+      top: 0;
+      left: 1.5%;
+      height: 91%;
+      width: 96.7%;
+      z-index: -100;
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+  </style>
+  <script>
+    function loading() {
+      document.getElementById("loading").style.zIndex = 9999999;
+    }
+
+    function loading_2() {
+      document.getElementById("loading_2").style.zIndex = 9999999;
+    }
+    $(document).ready(function () {
+      $('#header').load('static/header.html');
+      $('#path').load('static/paths.html');
+      $('#footer').load('static/footer.html');
+    });
+  </script>
+</head>
+
+
+<body>
+  <header id="header"
+    style="background-color: rgb(190, 188, 188); padding-bottom: 20px;border-bottom: 3px solid black;">
+  </header>
+  <div class="container-fluid">
+    <div class="row content" style="height:40%">
+      <div id="path"> </div>
+      <br>
+      <div class="col-sm-9" style="display:inline-block; margin-left: 20%">
+        <div class="row" style="position: relative; width: 70%; float: left;">
+          <div class="col-sm-7" style="width:95%">
+            <div class="well">
+              <h3>Pathogenecity prediction:</h3>
+              <h5>Fill the specified fields and click the RUN button</h5>
+              <div class="well">
+                <div id="loading"></div>
+                <form action="/tmsnp/results_pred" method="POST">
+                  <div class="row">
+                    <label for="input_seq">Accession number / Uniprot ID (e.g. FZD4_HUMAN / Q9UPI3):</label>
+                    <input id="input_seq_acc" type="text" name="input_seq_acc" style="width:100%">
+                  </div>
+                  <div class="row">
+                    <label for="input_seq">Amino acid SNP position (e.g. 361):</label>
+                    <input id="input_seq_pos" type="te/tmsnpxt" name="input_seq_pos" style="width:100%">
+                  </div>
+                  <div class="row">
+                    <label for="input_seq">Reference amino acid (e.g. V / Val):</label>
+                    <input id="input_seq_aai" type="text" name="input_seq_aai" style="width:100%">
+                  </div>
+                  <div class="row">
+                    <label for="input_seq">Mutated amino acid (e.g. A / Ala):</label>
+                    <input id="input_seq_aaf" type="text" name="input_seq_aaf" style="width:100%">
+                  </div>
+                  <div class="row">
+                    <br>
+                    <input id="run" type="submit" name="submit" value="Run" onclick="loading()">
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6" style="width:95%">
+            <div class="well">
+              <div id="loading_2"></div>
+              <h3>List SNPs with pathogenicity tags:</h3>
+              <form action="/tmsnp/results" method="post">
+                <label for="input_seq">Type the Uniprot ID / Protein accession number (e.g. FZD4_HUMAN / Q9UPI3) and
+                  click the RUN button:</label>
+                <p><input id="input_seq" type="text" name="input_seq" style="width:100%" /></p>
+                <p><input type="submit" name="submit" value="Run" onclick="loading_2()" /></p>
+              </form>
+            </div>
+          </div>
+        </div>
+        <!-- <div class="well" style="position: relative; width: 30%; float: left;">
+          <h3>Datasets</h3>
+          <hr>
+          <a href="./static/28052019_569v_database.zip" download="28052019_569v_database.zip">> 569V 28-05-2019 <form
+              action="/tmsnp/569Vdataset" method="get"><button> Download </button></form></a>
+          <p> > Dataset 25-03-2019 <form action="/tmsnp/get-dataset/dataset_201903251549.csv" method="get"><button>
+                Download </button></form> <br>
+            <p> > 4V 28-05-2019(Pending of update) <form action="/tmsnp/4Vdataset" method="get"><button> Download </button></form>
+          </p>
+          <p> > 569V 28-05-2019(Pending of update) <form action="/tmsnp/569Vdataset" method="get"><button> Download </button></form>
+	  </p>
+
+        </div> -->
+      </div>
+    </div>
+  </div>
+  <div id="footer" style="background-color: rgb(190, 188, 188); padding-bottom: 40px">
+  </div>
+
+
+</body>
+
+</html>

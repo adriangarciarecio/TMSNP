@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>TMSNP-RESULT</title>
+  <link rel="icon" type="image/ico" href="./static/images/logo.png">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./static/bootstrap.css">
+  <link rel="stylesheet" href="./static/style.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.18/css/jquery.dataTables.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+  <script type="text/javascript" src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.js"></script>
+  <style>
+    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+    .row.content {
+      height: 350px
+    }
+
+    /* Set gray background color and 100% height */
+    .sidenav {
+      background-color: #f1f1f1;
+    }
+
+    /* On small screens, set height to 'auto' for the grid */
+    @media screen and (max-width: 767px) {
+      .row.content {
+        height: auto;
+      }
+    }
+
+    p {
+      font-size: 16px;
+    }
+
+    table.result_table {
+      font-family: Arial, Helvetica, sans-serif;
+      border: 0px solid #000000;
+      width: 100%;
+      text-align: center;
+      border-collapse: collapse;
+    }
+
+    table.result_table td,
+    table.result_table th {
+      border: 1px solid #000000;
+      padding: 5px 4px;
+    }
+
+    table.result_table tbody td {
+      font-size: 14px;
+    }
+
+    table.result_table thead {
+      background: #CFCFCF;
+      background: -moz-linear-gradient(top, #dbdbdb 0%, #d3d3d3 66%, #CFCFCF 100%);
+      background: -webkit-linear-gradient(top, #dbdbdb 0%, #d3d3d3 66%, #CFCFCF 100%);
+      background: linear-gradient(to bottom, #dbdbdb 0%, #d3d3d3 66%, #CFCFCF 100%);
+      border-bottom: 1px solid #000000;
+    }
+
+    table.result_table thead th {
+      font-size: 15px;
+      font-weight: bold;
+      color: #000000;
+      text-align: center;
+    }
+
+    table.result_table tfoot td {
+      font-size: 14px;
+    }
+
+    /* Popup container - can be anything you want */
+    .popup {
+      position: relative;
+      cursor: pointer;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    /* The actual popup */
+    .popup .popuptext {
+      visibility: hidden;
+      width: 300px;
+      background-color: #555;
+      color: #fff;
+      text-align: justify;
+      border-radius: 6px;
+      padding: 8px 0;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 30%;
+      margin-left: -80px;
+    }
+
+    /* Popup arrow */
+    .popup .popuptext::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: #555 transparent transparent transparent;
+    }
+
+    /* Toggle this class - hide and show the popup */
+    .popup .show {
+      visibility: visible;
+      -webkit-animation: fadeIn 1s;
+      animation: fadeIn 1s;
+    }
+
+    .popup .unshow {
+      visibility: hidden;
+      -webkit-animation: fadeOut 1s;
+      animation: fadeOut 1s;
+    }
+
+    /* Add animation (fade in the popup) */
+    @-webkit-keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @-webkit-keyframes fadeOut {
+      from {
+        opacity: 1;
+      }
+
+      to {
+        opacity: 0;
+      }
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+      }
+
+      to {
+        opacity: 0;
+      }
+    }
+  </style>
+  <script>
+    $(document).ready(function () {
+      $('#header').load('static/header.html');
+      $('#path').load('static/paths.html');
+    });
+  </script>
+</head>
+
+<body>
+  <header id="header" style="background-color: rgb(190, 188, 188); padding-bottom: 20px">
+  </header>
+  <div class="container-fluid">
+    <div class="row content" style="height:40%">
+      <div id="path"> </div>
+      <br>
+      <div class="col-sm-9" style="display:inline-block; margin-left: 20%">
+        <div class="well" style="margin-right: -40px;position: absolute;">
+          <!-- <h1><u>RESULTS:</u><img src="./static/images/logo.png" id="result" style="width: 300px;position: absolute;top: -0.5%;left: 70%;overflow: hidden;" /></h1> -->
+          <h1><u>RESULTS:</u></h1>
+          <h3> {{ acc }} </h3>
+          <h4> {{ id }} </h4>
+          <br>
+          <p>- <b>PFAM code:</b> {{ pfam }}</p>
+          <p>- <b>Reference amino acid :</b> {{ aa_ref_3 }} ({{ aa_ref }})</p>
+          <p>- <b>Mutated amino acid:</b> {{ aa_mut_3 }} ({{ aa_mut }})</p>
+          <br>
+          <table class="result_table">
+            <thead>
+              <tr>
+                <th>Amino acid position</th>
+                <th>Frequence wild type residue</th>
+                <th>Frequence mutated residue</th>
+                <th>Entropy</th>
+                <th>Substitution matrix score</th>
+                <th>Pathogenic/Non-pathogenic mutation</th>
+                <!-- <th class="popup" onclick="openpopup_dys()" style="color:#2B3856">Functional/Dysfunctional mutation
+                  <span class="popuptext" id="dyspopup"> A <u>dysfunctional mutation</u> is a damaging mutation does
+                    affects protein structure and/or function.
+                    <br> A <u>functional mutation</u> is a neutral mutation does not affect protein structure and/or
+                    function.
+                  </span>
+                </th> -->
+                <!-- <th class="popup" onmouseover="openpopup_var()" onmouseout="closepopup_var()" style="color:#2B3856">Pathogenic/Non-pathogenic
+                  mutation
+                  <span class="popuptext" id="varpopup">
+                    Proteins are classified as <u>pathogenic proteins</u> if pathogenic disease-causing mutations have
+                    been described.
+                    <br> Proteins are classified as <u>non-pathogenic proteins</u> if no disease-causing mutation have
+                    previously been described. </span></th> -->
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ snp_pos }}</td>
+                <td>{{ freq_ref }}</td>
+                <td>{{ freq_mut }}</td>
+                <td>{{ entropy }}</td>
+                <td>{{ subs_mat }}</td>
+                <td id="class">{{ classification }} {{ conf }}</td>
+              </tr>
+            </tbody>
+            </tr>
+          </table>
+          <br>
+          <a href="/tmsnp/">- Back -</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript">
+    // When the user clicks on div, open the popup
+    // function openpopup_dys() {
+    //   var popup = document.getElementById("dyspopup");
+    //   popup.classList.toggle("show");
+    // }
+    function openpopup_var() {
+      var popup = document.getElementById("varpopup");
+      popup.classList.remove("unshow");
+      popup.classList.toggle("show");
+    }
+
+    function closepopup_var() {
+      var popup = document.getElementById("varpopup");
+      popup.classList.remove("show");
+      popup.classList.toggle("unshow");
+    }
+    var classification = document.getElementById("class");
+    var result = classification.textContent
+    if (result.includes("Pathogenic")) {
+      var path_result = "patho";
+      document.getElementById("result").src = "./static/images/" + path_result + ".png";
+    }
+    if (result.includes("Non-pathogenic")) {
+      var path_result = "nonpatho";
+      document.getElementById("result").src = "./static/images/" + path_result + ".png";
+    }
+    if (result.includes("Outside the domain of applicability")) {
+      var path_result = "idk";
+      document.getElementById("result").src = "./static/images/" + path_result + ".png";
+    }
+  </script>
+
+
+</body>
+
+</html>

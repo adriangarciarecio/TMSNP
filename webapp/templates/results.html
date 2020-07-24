@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>SNP Scoring Info</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./static/bootstrap.css">
+  <link rel="stylesheet" href="./static/style.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.18/css/jquery.dataTables.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+  <script type="text/javascript" src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function () {
+      // Setup - add a text input to each footer cell
+      $('#table thead tr').clone(true).appendTo('#table thead');
+      $('#table thead tr:eq(1) th').each(function (i) {
+        var title = $(this).text();
+        $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+
+        $('input', this).on('keyup change', function () {
+          if (table.column(i).search() !== this.value) {
+            table
+              .column(i)
+              .search(this.value)
+              .draw();
+          }
+        });
+      });
+
+      var table = $('#table').DataTable({
+        orderCellsTop: true,
+        fixedHeader: true,
+        "aLengthMenu": [
+          [25, 50, 75, -1],
+          [25, 50, 75, "All"]
+        ],
+        "iDisplayLength": 25,
+      });
+    });
+  </script>
+  <style>
+    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+    .row.content {
+      height: 350px
+    }
+
+    /* Set gray background color and 100% height */
+    .sidenav {
+      background-color: #f1f1f1;
+    }
+
+    /* On small screens, set height to 'auto' for the grid */
+    @media screen and (max-width: 767px) {
+      .row.content {
+        height: auto;
+      }
+    }
+
+    thead {
+      display: table-header-group;
+    }
+
+    thead input {
+      width: 100%;
+      padding: 3px;
+      box-sizing: border-box;
+    }
+  </style>
+  <script>
+    $(document).ready(function () {
+      $('#header').load('static/header.html');
+      $('#path').load('static/paths.html');
+    });
+  </script>
+</head>
+
+
+<body>
+  <header id="header" style="background-color: rgb(190, 188, 188); padding-bottom: 20px">
+  </header>
+  <div class="container-fluid">
+    <div class="row content" style="height:40%">
+      <div id="path"> </div>
+      <br>
+      <div class="col-sm-9" style="display:inline-block; margin-left: 20%">
+        <div class="well" style="margin-right: -40px">
+          <h2>Results:</h2>
+          <p>The input was: {{ input_seq }}</p>
+          {{ tabledata|safe}}
+          <br>
+          <a href="/tmsnp/">- Back -</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>

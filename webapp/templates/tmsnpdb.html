@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>SNP Scoring Info</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./static/bootstrap.css">
+  <link rel="stylesheet" href="./static/style.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.18/css/jquery.dataTables.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+  <script type="text/javascript" src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.js"></script>
+  <style>
+    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+    .row.content {
+      height: 350px
+    }
+
+    /* Set gray background color and 100% height */
+    .sidenav {
+      background-color: #f1f1f1;
+    }
+
+    /* On small screens, set height to 'auto' for the grid */
+    @media screen and (max-width: 767px) {
+      .row.content {
+        height: auto;
+      }
+    }
+
+    thead {
+      display: table-header-group;
+    }
+
+    thead input {
+      width: 100%;
+      padding: 3px;
+      box-sizing: border-box;
+    }
+
+    th,
+    td {
+      text-align: center;
+    }
+  </style>
+  <script>
+    $(document).ready(function () {
+      $('#header').load('static/header.html');
+      $('#path').load('static/paths.html');
+    });
+  </script>
+</head>
+
+<body>
+  <header id="header" style="background-color: rgb(190, 188, 188); padding-bottom: 20px">
+  </header>
+  <div class="container-fluid">
+    <div class="row content" style="height:40%">
+      <div id="path"> </div>
+      <br>
+      <div class="col-sm-9" style="display:inline-block; margin-left: 20%">
+        <div class="well" style="margin-right: -40px">
+          <h2>TMSNPdb:</h2><br>
+          <table id="table_id">
+            <thead>
+              <tr>
+                <th>Accession</th>
+                <th>ID</th>
+                <th>Code PFAM</th>
+                <th>SNP ID</th>
+                <th>Code rs</th>
+                <th>Reference aminoacid</th>
+                <th>Mutated aminoacid</th>
+                <th>Position</th>
+                <th>Disease related</th>
+                <th>Gnomad frequency</th>
+                <th>Score substitution matrix</th>
+                <th>Reference frequency</th>
+                <th>Mutated frequency</th>
+                <th>Entropy</th>
+                <th>Polyphen prediction</th>
+                <th>Sift prediction</th>
+                <th>Muthtp prediction</th>
+                <!-- <th>Muthtp score</th> -->
+                <!-- <th>ID_pk</th> 
+                <th>Active site</th>
+                <th>Binding site</th>
+                <th>Metal</th>
+                <th>mod_res</th>
+                <th>Carbohyd</th>
+                <th>Lipid</th>
+                <th>Mutagen</th>
+                <th>Disulfide</th>
+                <th>Calcium bind</th>
+                <th>DNA bind</th> -->
+              </tr>
+            </thead>
+          </table>
+          <br>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript">
+    $(document).ready(function () {
+      $('#table_id').DataTable({
+        scrollX: true,
+        processing: true,
+        serverSide: true,
+        paginationType: "full_numbers",
+        // dataType: 'text',
+        lengthMenu: [
+          [10, 25, 50, 100],
+          [10, 25, 50, 100]
+        ],
+        ajax: '/tmsnp/processing',
+        // columns: [{
+        //     "data": "Accession"
+        //   },
+        //   {
+        //     "data": "ID"
+        //   },
+        //   {
+        //     "data": "Code PFAM"
+        //   },
+        //   {
+        //     "data": "SNP ID"
+        //   },
+        //   {
+        //     "data": "Code rs"
+        //   },
+        //   {
+        //     "data": "Reference aminoacid"
+        //   },
+        //   {
+        //     "data": "Mutated aminoacid"
+        //   },
+        //   {
+        //     "data": "Position"
+        //   },
+        //   {
+        //     "data": "Gnomad frequency"
+        //   },
+        //   {
+        //     "data": "Score substitution matrix"
+        //   },
+        //   {
+        //     "data": "Reference frequency"
+        //   },
+        //   {
+        //     "data": "Mutated frequency"
+        //   },
+        //   {
+        //     "data": "Entropy"
+        //   },
+        //   {
+        //     "data": "Disease related"
+        //   },
+        //   {
+        //     "data": "Active site"
+        //   },
+        //   {
+        //     "data": "Binding site"
+        //   },
+        //   {
+        //     "data": "Metal"
+        //   },
+        //   {
+        //     "data": "mod_res"
+        //   },
+        //   {
+        //     "data": "Carbohyd"
+        //   },
+        //   {
+        //     "data": "Lipid"
+        //   },
+        //   {
+        //     "data": "Mutagen"
+        //   },
+        //   {
+        //     "data": "Disulfide"
+        //   },
+        //   {
+        //     "data": "Calcium bind"
+        //   },
+        //   {
+        //     "data": "DNA bind"
+        //   },
+        //   {
+        //     "data": "Polyphen prediction"
+        //   },
+        //   {
+        //     "data": "Sift prediction"
+        //   },
+        // ]
+      });
+    });
+  </script>
+</body>
+
+</html>
