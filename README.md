@@ -69,6 +69,10 @@ This is a collection of scripts to set up or update the TMSNP database. They sho
 
 ## TMSNP PREDICTOR
 
-Machine-learning models were built using Flame (https://github.com/phi-grib/flame; a Python modeling framework which wraps scikit-learn (http://scikit-learn.sourceforge.net)). Unfortunately, the size of the files that contain the models are higher than the maximum upload size that GitHub give.
+Machine-learning models were built using Flame (https://github.com/phi-grib/flame; a Python modeling framework which wraps scikit-learn (http://scikit-learn.sourceforge.net)). 
+
+Unfortunately, the size of the files that contain the models are higher than the maximum upload size that GitHub give. For this reason, we provide a Dropbox link to share the models without constrains:
+- https://www.dropbox.com/s/p7otqs0ckz710lg/estimator_patho_v2.pkl?dl=0
+- https://www.dropbox.com/s/5t3krpswjld7824/estimator_nonpatho_v2.pkl?dl=0
 
 We have also created a Virtual Environment (webapp/venv_tmsnp) used by the webapp to perform the predictions using the script webapp/predictor.py. 
