@@ -1,5 +1,20 @@
 # TMSNP
 
+TMSNP is a web application tool that was constructed using a Python backend (v.3.7) with the Flask framework  (v.1.0.2). Both the application and the associated datasets used for training and testing the predictor were built automatically using Python/Bash scripts that collected the required data and stored it in a MySQL database (v.8.0.18), facilitating regular updates.
+
+It is divided into two parts: 
+- TMSNP Database 
+- TMSNP Predictor (WebApp)
+
+## TMSNP DATABASE
+
+It is necessary to install the next: 
+
+- Python v3.7
+- SQLAlchemy (or another mysql connector package, this package is useful because is a more directly connection in one line) 
+- Pandas 
+- Numpy  
+
 This is a collection of scripts to set up or update the TMSNP database. They should be executed in the order listed here.
 
 - Get SNPs from the Uniprot and also the TM helix annotations (mainly Iker’s stuff). This starts with the list of all membrane proteins in Uniprot at each time the script runs. Creates the MySQL tables receptor_pfam (contains Uniprot ID - multiple PFAM ID relations), tm_segments (start end of each TM segment and linked to Uniprot ID), and snp (all info).
@@ -50,3 +65,10 @@ This is a collection of scripts to set up or update the TMSNP database. They sho
   - 
 - Export table to .csv file
   - $ mysql -u lmcdb -h alf03.uab.cat -p$LMCDB_PASS tmsnp -B -e "select * from snp_eval;" > tmsnps_12-2018.csv
+  
+
+## TMSNP PREDICTOR
+
+Machine-learning models were built using Flame (https://github.com/phi-grib/flame; a Python modeling framework which wraps scikit-learn (http://scikit-learn.sourceforge.net)). Unfortunately, the size of the files that contain the models are higher than the maximum upload size that GitHub give.
+
+We have also created a Virtual Environment (webapp/venv_tmsnp) used by the webapp to perform the predictions using the script webapp/predictor.py. 
