@@ -75,4 +75,6 @@ Unfortunately, the size of the files that contain the models are higher than the
 - https://www.dropbox.com/s/p7otqs0ckz710lg/estimator_patho_v2.pkl?dl=0
 - https://www.dropbox.com/s/5t3krpswjld7824/estimator_nonpatho_v2.pkl?dl=0
 
-We have also created a Virtual Environment (webapp/venv_tmsnp) used by the webapp to perform the predictions using the script webapp/predictor.py. 
+We have also created a Virtual Environment used by the webapp to perform the predictions using the script webapp/predictor.py. 
+
+- https://www.dropbox.com/s/mh7gemrfslsl7oi/venv_tmsnp.zip?dl=0
